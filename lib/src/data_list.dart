@@ -14,7 +14,7 @@ import "dart:collection";
  * List with change notifications. Change set contains indexes which were changed.
  */
 
-class DataList extends Object with IterableMixin implements List {
+class DataList extends Object with IterableMixin, ChangeNotificationsMixin implements List {
 
   Iterator get iterator => _elements.iterator;
 
@@ -276,59 +276,5 @@ class DataList extends Object with IterableMixin implements List {
 
   void clear({author: null}) {
     //TODO
-  }
-
-  /**
-   * Streams all new changes marked in [changeSet].
-   */
-  void _notify({author: null}) {
-    //TODO
-    /*
-    if (!_changeSetSync.isEmpty) {
-      _onChangeSyncController.add({'author': author, 'change': _changeSetSync});
-      _clearChangesSync();
-    }
-
-    Timer.run(() {
-      if(!_changeSet.isEmpty) {
-        _changeSet.prettify();
-
-        if(!_changeSet.isEmpty) {
-          _onChangeController.add(_changeSet);
-          _clearChanges();
-        }
-      }
-    }); */
-  }
-
-  //TODO think about
-  _clearChanges() {
-    _changeSet = new ChangeSet();
-  }
-
-  _clearChangesSync() {
-    _changeSetSync = new ChangeSet();
-  }
-
-  _markAdded(int index) {
-    _changeSetSync.markAdded(index);
-    _changeSet.markAdded(index);
-  }
-
-  _markRemoved(int index) {
-    _changeSet.markRemoved(index);
-    _changeSetSync.markRemoved(index);
-  }
-
-  _markChanged(int index, Change change) {
-    _changeSet.markChanged(index, change);
-    _changeSetSync.markChanged(index, change);
-  }
-
-  /**
-   * Clear subscriptions
-   */
-  void dispose() {
-
   }
 }
