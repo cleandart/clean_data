@@ -194,6 +194,8 @@ class Data extends DataView with DataChangeListenersMixin<String> implements Map
    */
   Data();
 
+
+
   /**
    * Creates a new data object from key-value pairs [data].
    */
@@ -218,27 +220,20 @@ class Data extends DataView with DataChangeListenersMixin<String> implements Map
    */
   void addAll(Map other, {author: null}) {
     other.forEach((key, value) {
-
       if (_fields.containsKey(key)) {
         _markChanged(key, new Change(_fields[key], value));
-      } else if (value is DataView) {
-        if(_removedObjects.contains(key)){
-          _removedObjects.remove(key);
-          if(_fields[key] != value){
-            _removeOnDataChangeListener(key);
-            _addOnDataChangeListener(key, value); //it is removed by onBeforeRemove
-            _markAdded(key);
-            _markChanged(key, new Change(_fields[key], value));
-          }
-        }
-        else{
-          _addOnDataChangeListener(key, value); //it is removed by onBeforeRemove
-          _markAdded(key);
+        if(_fields[key] is DataView){
+          _removeOnDataChangeListener(key);
         }
       } else {
         _markChanged(key, new Change(null, value));
         _markAdded(key);
       }
+
+      if(value is DataView){
+        _addOnDataChangeListener(key, value);
+      }
+
       _fields[key] = value;
     });
     _notify(author: author);
@@ -264,13 +259,13 @@ class Data extends DataView with DataChangeListenersMixin<String> implements Map
    */
   void removeAll(List<String> keys, {author: null}) {
     for (var key in keys) {
-      if (_fields[key] is! DataView) {
-        _markChanged(key, new Change(_fields[key], null));
-      } else {
-        //listener is removed by onBeforeRemove
-        _removedObjects.add(key);
-      }
+      _markChanged(key, new Change(_fields[key], null));
       _markRemoved(key);
+
+      if(_fields[key] is DataView){
+        _removeOnDataChangeListener(key);
+      }
+
       _fields.remove(key);
     }
     _notify(author: author);
