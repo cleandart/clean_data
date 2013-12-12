@@ -5,10 +5,7 @@
 //TODO nested Data objects
 //TODO refactor with Data.dart
 
-import 'package:clean_data/clean_data.dart';
-import 'dart:async';
-import 'dart:math';
-import "dart:collection";
+part of clean_dart;
 
 /**
  * List with change notifications. Change set contains indexes which were changed.
@@ -168,7 +165,6 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
   }
 
 
-
   final List _elements = new List();
 
   /**
@@ -184,27 +180,6 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
   }
 
   dynamic operator[](index) => _elements[index];
-
-  //TODO refactor with DataView
-  ChangeSet _changeSet = new ChangeSet();
-  ChangeSet _changeSetSync = new ChangeSet();
-
-  final StreamController<ChangeSet> _onChangeController =
-      new StreamController.broadcast();
-
-  final StreamController<Map> _onChangeSyncController =
-      new StreamController.broadcast(sync: true);
-
-  /**
-   * Stream populated with [ChangeSet] events whenever the data gets changed.
-   */
-  Stream<ChangeSet> get onChange => _onChangeController.stream;
-
-  /**
-   * Stream populated with {'change': [ChangeSet], 'author': [dynamic]} events
-   * synchronously at the moment when the data get changed.
-   */
-  Stream<Map> get onChangeSync => _onChangeSyncController.stream;
 
   /**
    * Returns true if there is no {key, value} pair in the data object.
