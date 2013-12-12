@@ -9,6 +9,20 @@ import 'package:unittest/unittest.dart';
 import 'package:unittest/mock.dart';
 import 'package:clean_data/clean_data.dart';
 
+int GROUP_CHANGED = 0;
+int GROUP_ADDED = 1;
+int GROUP_REMOVED = 2;
+List groupChanges(Mock mock, int size){
+  List result = [[],[],[]];
+  var event1 = mock.getLogs().logs.forEach((log){
+    var change = log.args.first['change'];
+    result[GROUP_CHANGED].addAll(change.changedItems.keys);
+    result[GROUP_ADDED].addAll(change.addedItems);
+    result[GROUP_REMOVED].addAll(change.removedItems);
+  });
+  return result;
+}
+
 void main() {
   //TODO
   group('(DataList)', () {
@@ -361,9 +375,108 @@ void main() {
       dataList.onChange.listen(protectAsync1((e) => expect(true, isFalse)));
     });
 
-    //TODO -listening on adding after particular index (insertAll)
-    //TODO what should happen if remove(2); remove(2); remove(2) ?
-    //TODO add add, remove from middle (also add remove multiple)
+    test('listen elements inserted to middle. (T22)', () {
+      // given
+      DataList dataList = new DataList.from(['element1','element2', 'element3']);
+      var mock = new Mock();
+      dataList.onChangeSync.listen((event) => mock.handler(event));
+
+      // when
+      dataList.insert(1, 'element1.5');
+
+      // then
+      mock.getLogs().verify(happenedExactly(3));
+      var changes = groupChanges(mock, 3);
+      expect(changes[GROUP_CHANGED], unorderedEquals([1,2]));
+      expect(changes[GROUP_ADDED], unorderedEquals([3]));
+      expect(changes[GROUP_REMOVED], unorderedEquals([]));
+    });
+
+    test('listen multiple elements inserted to middle. (T23)', () {
+      // given
+      DataList dataList = new DataList.from(['element1','element2', 'element3']);
+      var mock = new Mock();
+
+      // when
+      dataList.insert(1, 'element1.5');
+      dataList.insert(1, 'element1.25');
+
+      // then
+      dataList.onChange.listen(expectAsync1((ChangeSet event) {
+        expect(event.changedItems.keys, unorderedEquals([1,2]));
+
+        Change change1 = event.changedItems[0];
+        expect(change1.oldValue, equals('element2'));
+        expect(change1.newValue, equals('element1.25'));
+
+        Change change2 = event.changedItems[1];
+        expect(change2.oldValue, equals('element3'));
+        expect(change2.newValue, equals('element1.5'));
+
+        expect(event.addedItems, unorderedEquals([3,4]));
+        expect(event.removedItems, unorderedEquals([]));
+      }));
+    });
+
+    test('listen elements removed from middle. (T24)', () {
+      // given
+      DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
+      var mock = new Mock();
+      dataList.onChangeSync.listen((event) => mock.handler(event));
+
+      // when
+      dataList.removeAt(1);
+
+      // then
+      mock.getLogs().verify(happenedExactly(3));
+      var changes = groupChanges(mock, 3);
+      expect(changes[GROUP_CHANGED], unorderedEquals([1,2]));
+      expect(changes[GROUP_ADDED], unorderedEquals([]));
+      expect(changes[GROUP_REMOVED], unorderedEquals([3]));
+    });
+
+    test('listen remove multiple elements from middle. (T25)', () {
+      // given
+      DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4', 'element5']);
+      var mock = new Mock();
+
+      // when
+      dataList.removeAt(1);
+      dataList.removeAt(1);
+
+      // then
+      dataList.onChange.listen(expectAsync1((ChangeSet event) {
+        expect(event.changedItems.keys, unorderedEquals([1,2]));
+
+        Change change1 = event.changedItems[0];
+        expect(change1.oldValue, equals('element2'));
+        expect(change1.newValue, equals('element4'));
+
+        Change change2 = event.changedItems[1];
+        expect(change2.oldValue, equals('element3'));
+        expect(change2.newValue, equals('element5'));
+
+        expect(event.addedItems, unorderedEquals([]));
+        expect(event.removedItems, unorderedEquals([3,4]));
+      }));
+    });
+
+    test('removing multiple from middle and then reading same makes no change. (T26)', () {
+      // given
+      DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4', 'element5']);
+      var mock = new Mock();
+
+      // when
+      dataList.removeAt(1);
+      dataList.removeAt(1);
+      dataList.insert(1, 'element3');
+      dataList.insert(1, 'element2');
+
+      // then
+      dataList.onChange.listen(protectAsync1((ChangeSet event) {
+        expect(true, isFalse);
+      }));
+    });
 
     test(' implements List.clear(). (T20)', () {
       //TODO
