@@ -5,6 +5,7 @@
 
 import 'data_test.dart' as data_test;
 import 'data_collection_test.dart' as data_collection_test;
+import 'data_list_test.dart' as data_list_test;
 import 'hash_index_test.dart' as hash_index_test;
 import 'id_generator_test.dart' as id_generator_test;
 import 'change_set_test.dart' as change_set_test;
@@ -17,9 +18,9 @@ import 'collections/intersected_collection_view_test.dart' as intersected_test;
 import 'collections/excepted_collection_view_test.dart' as excepted_test;
 
 main() {
-
   data_test.main();
   data_collection_test.main();
+  data_list_test.main();
   id_generator_test.main();
   change_set_test.main();
 
