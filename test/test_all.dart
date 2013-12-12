@@ -16,6 +16,11 @@ import 'collections/unioned_collection_view_test.dart' as unioned_test;
 import 'collections/intersected_collection_view_test.dart' as intersected_test;
 import 'collections/excepted_collection_view_test.dart' as excepted_test;
 import 'package:unittest/unittest.dart';
+import 'package:unittest/vm_config.dart';
+
+main() {
+  run(new VMConfiguration());
+}
 
 run(configuration) {
   unittestConfiguration = configuration;
