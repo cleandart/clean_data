@@ -187,6 +187,8 @@ abstract class DataView extends Object with ChangeNotificationsMixin {
  */
 
 class Data extends DataView with DataChangeListenersMixin<String> implements Map {
+  //Track subscriptions and remove
+
   /**
    * Creates an empty data object.
    */
@@ -216,11 +218,23 @@ class Data extends DataView with DataChangeListenersMixin<String> implements Map
    */
   void addAll(Map other, {author: null}) {
     other.forEach((key, value) {
+
       if (_fields.containsKey(key)) {
         _markChanged(key, new Change(_fields[key], value));
       } else if (value is DataView) {
-        _markAdded(key);
-        _addOnDataChangeListener(key, value);
+        if(_removedObjects.contains(key)){
+          _removedObjects.remove(key);
+          if(_fields[key] != value){
+            _removeOnDataChangeListener(key);
+            _addOnDataChangeListener(key, value); //it is removed by onBeforeRemove
+            _markAdded(key);
+            _markChanged(key, new Change(_fields[key], value));
+          }
+        }
+        else{
+          _addOnDataChangeListener(key, value); //it is removed by onBeforeRemove
+          _markAdded(key);
+        }
       } else {
         _markChanged(key, new Change(null, value));
         _markAdded(key);
@@ -253,6 +267,7 @@ class Data extends DataView with DataChangeListenersMixin<String> implements Map
       if (_fields[key] is! DataView) {
         _markChanged(key, new Change(_fields[key], null));
       } else {
+        //listener is removed by onBeforeRemove
         _removedObjects.add(key);
       }
       _markRemoved(key);

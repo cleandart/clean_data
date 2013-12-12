@@ -463,6 +463,48 @@ void main() {
           onChange.getLogs().verify(neverHappened);
         });
       });
+
+      test('when same child Data is removed then re-added then no change.', () {
+        // given
+        var child = new Data();
+        var dataObj = new Data.from({'child': child});
+        var onChange = new Mock();
+
+        // when
+        dataObj.remove('child');
+        dataObj.add('child', child);
+
+        // then
+        dataObj.onChange.listen(expectAsync1((ChangeSet event) {
+          expect(event.changedItems.keys, unorderedEquals([]));
+          expect(event.addedItems, unorderedEquals([]));
+          expect(event.removedItems, unorderedEquals([]));
+        }));
+      });
+
+      test('when different child Data is removed then added, this is a change.', () {
+        // given
+        var childOld = new Data();
+        var childNew = new Data();
+        var dataObj = new Data.from({'child': childOld});
+        var onChange = new Mock();
+
+        // when
+        dataObj.remove('child');
+        dataObj.add('child', childNew);
+
+        // then
+        dataObj.onChange.listen(expectAsync1((ChangeSet event) {
+          expect(event.changedItems.keys, unorderedEquals(['child']));
+
+          Change change = event.changedItems['child'];
+          expect(change.oldValue, equals(childOld));
+          expect(change.newValue, equals(childNew));
+
+          expect(event.addedItems, unorderedEquals([]));
+          expect(event.removedItems, unorderedEquals([]));
+        }));
+      });
     });
  });
 }

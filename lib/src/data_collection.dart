@@ -299,7 +299,7 @@ class DataCollection extends DataCollectionView with DataChangeListenersMixin<Da
   void add(DataView dataObj, {author: null}) {
     _removedObjects.remove(dataObj);
     _markAdded(dataObj);
-    _removedObjects.remove(dataObj);
+    _removedObjects.remove(dataObj); //TODO why twice?
 
     _data.add(dataObj);
 
