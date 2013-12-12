@@ -15,100 +15,200 @@ void main() {
 
     test('initialize. (T01)', () {
       // when
-      var data = new Data();
+      DataList dataList = new DataList();
 
       // then
-      expect(data.isEmpty, isTrue);
-      expect(data.isNotEmpty, isFalse);
-      expect(data.length, 0);
+      expect(dataList.isEmpty, isTrue);
+      expect(dataList.isNotEmpty, isFalse);
+      expect(dataList.length, 0);
     });
 
-    test('initialize with data. (T02)', () {
+    test('element added like a list. (T02)', () {
       // given
-      var data = {
-        'key1': 'value1',
-        'key2': 'value2',
-        'key3': 'value3',
-      };
+      DataList dataList = new DataList();
 
       // when
-      var dataObj = new Data.from(data);
+      dataList.add('element1');
 
       // then
-      expect(dataObj.isEmpty, isFalse);
-      expect(dataObj.isNotEmpty, isTrue);
-      expect(dataObj.length, equals(data.length));
-      expect(dataObj.keys, equals(data.keys));
-      expect(dataObj.values, equals(data.values));
-      for (var key in data.keys) {
-        expect(dataObj[key], equals(data[key]));
-      }
+      expect(dataList.isEmpty, isFalse);
+      expect(dataList.isNotEmpty, isTrue);
+      expect(dataList.length, 1);
     });
 
     test('is accessed like a list. (T03)', () {
       // given
+      DataList dataList = new DataList();
+      dataList.add('element1');
 
-      // when
-
-      // then
+      // when & then
+      expect(dataList[0], equals('element1'));
     });
 
-    test('remove multiple indexes. (T04)', () {
+    test('initialize with data. (T04)', () {
       // given
+      var list = ['element1', 'element2', 'element3'];
 
       // when
+      DataList dataList = new DataList.from(list);
 
       // then
+      expect(dataList.isEmpty, isFalse);
+      expect(dataList.isNotEmpty, isTrue);
+      expect(dataList.length, equals(list.length));
+      for(int i=0; i<dataList.length ; i++) {
+        expect(dataList[i], equals(list[i]));
+      }
     });
 
     test('add multiple items. (T05)', () {
       // given
+      var list = ['element1', 'element2', 'element3'];
+      DataList dataList = new DataList();
 
       // when
+      dataList.addAll(list);
 
       // then
+      expect(dataList.isEmpty, isFalse);
+      expect(dataList.isNotEmpty, isTrue);
+      expect(dataList.length, equals(list.length));
+      for(int i=0; i<dataList.length ; i++) {
+        expect(dataList[i], equals(list[i]));
+      }
     });
 
-    test('listen on multiple indexes removed. (T06)', () {
+    test('listen on element added. (T08)', () {
       // given
-      var data = {'key1': 'value1', 'key2': 'value2', 'key3': 'value3'};
-      var keysToRemove = ['key1', 'key2'];
-      var dataObj = new Data.from(data);
-      var mock = new Mock();
-      dataObj.onChangeSync.listen((event) => mock.handler(event));
+      DataList dataList = new DataList();
 
       // when
-      dataObj.removeAll(keysToRemove, author: 'John Doe');
+      dataList.add('element');
 
-      // then sync onChange propagates information about all changes and
-      // removals
-
-      //then
-      mock.getLogs().verify(happenedOnce);
-      var event = mock.getLogs().first.args[0];
-      expect(event['author'], equals('John Doe'));
-      var changeSet = event['change'];
-      expect(changeSet.removedItems, unorderedEquals(keysToRemove));
-
-      // but async onChange drops information about changes in removed items.
-      dataObj.onChange.listen(expectAsync1((changeSet) {
-        expect(changeSet.removedItems, unorderedEquals(keysToRemove));
-        expect(changeSet.addedItems.isEmpty, isTrue);
-        expect(changeSet.changedItems.isEmpty, isTrue);
+      // then
+      dataList.onChange.listen(expectAsync1((ChangeSet event) {
+        expect(event.changedItems.isEmpty, isTrue);
+        expect(event.removedItems.isEmpty, isTrue);
+        expect(event.addedItems, equals([0]));
       }));
 
     });
 
-    //TODO -adding after particular index (insertAll)
-    test('listen on multiple elements added. (T07)', () {
+    test('listen synchronously on element added. (T09)', () {
       // given
-      var data = {'key1': 'value1', 'key2': 'value2', 'key3': 'value3'};
-      var dataObj = new Data();
+      DataList dataList = new DataList();
       var mock = new Mock();
-      dataObj.onChangeSync.listen((event) => mock.handler(event));
+      dataList.onChangeSync.listen((event) => mock.handler(event));
 
       // when
-      dataObj.addAll(data, author: 'John Doe');
+      dataList.add('element', author: 'John Doe');
+
+      // then
+      mock.getLogs().verify(happenedOnce);
+      var event = mock.getLogs().first.args[0];
+      expect(event['author'], equals('John Doe'));
+      expect(event['change'].addedItems, equals([0]));
+      expect(event['change'].changedItems.keys, equals([0]));
+    });
+
+    test('listen synchronously on multiple elements added. (T10)', () {
+      // given
+      DataList dataList = new DataList();
+      var mock = new Mock();
+      dataList.onChangeSync.listen((event) => mock.handler(event));
+
+      // when
+      dataList.add('element1');
+      dataList.add('element2');
+
+      // then
+      mock.getLogs().verify(happenedExactly(2));
+      var event1 = mock.getLogs().logs[0].args.first;
+      var event2 = mock.getLogs().logs[1].args.first;
+      expect(event1['change'].addedItems, equals([0]));
+      expect(event2['change'].addedItems, equals([1]));
+    });
+
+    test('listen on index removed. (T11)', () {
+      // given
+      DataList dataList = new DataList.from(['element1']);
+
+      // when
+      dataList.remove(0);
+
+      // then
+      dataList.onChange.listen(expectAsync1((ChangeSet event) {
+        expect(event.changedItems.isEmpty, isTrue);
+        expect(event.addedItems.isEmpty, isTrue);
+        expect(event.removedItems, unorderedEquals([0]));
+      }));
+    });
+
+    test('listen synchronously on index removed. (T12)', () {
+      // given
+      DataList dataList = new DataList.from(['element1']);
+      var mock = new Mock();
+      dataList.onChangeSync.listen((event) => mock.handler(event));
+
+      // when
+      dataList.remove(0, author: 'John Doe');
+
+      // then
+      mock.getLogs().verify(happenedOnce);
+      var event = mock.getLogs().logs.first.args.first;
+      expect(event['author'], equals('John Doe'));
+      expect(event['change'].addedItems.isEmpty, isTrue);
+      expect(event['change'].removedItems, unorderedEquals([0]));
+      expect(event['change'].changedItems.length, equals(1));
+    });
+
+    test('listen on {index, element} changed. (T13)', () {
+      // given
+      DataList dataList = new DataList.from(['oldElement']);
+
+      // when
+      dataList[0] = 'newElement';
+
+      // then
+      dataList.onChange.listen(expectAsync1((ChangeSet event) {
+        expect(event.addedItems.isEmpty, isTrue);
+        expect(event.removedItems.isEmpty, isTrue);
+        expect(event.changedItems.length, equals(1));
+        var change = event.changedItems[0];
+        expect(change.oldValue, equals('oldElement'));
+        expect(change.newValue, equals('newElement'));
+      }));
+    });
+
+    test('propagate multiple changes in single [ChangeSet]. (T14)', () {
+      // given
+      DataList dataList = new DataList.from(['element1', 'element2']);
+
+      // when
+      dataList[0] = 'newElement1';
+      dataList.remove(1);
+      dataList.add('newElement2');
+
+      // then
+      dataList.onChange.listen(expectAsync1((ChangeSet event) {
+        expect(event.changedItems.keys, unorderedEquals([0]));
+        //TODO consult
+        expect(event.removedItems, unorderedEquals([1]));
+        expect(event.addedItems, unorderedEquals([1]));
+      }));
+    });
+
+    //TODO -listening on adding after particular index (insertAll)
+
+    test('listen on multiple elements added. (T15)', () {
+      // given
+      List list = ['element1', 'element2', 'element3'];
+      DataList dataList = new DataList();
+      var mock = new Mock();
+      dataList.onChangeSync.listen((event) => mock.handler(event));
+
+      // when
+      dataList.addAll(list, author: 'John Doe');
 
       // then sync onChange propagates information about all changes and
       // adds
@@ -119,156 +219,54 @@ void main() {
 
       var changeSet = event['change'];
       expect(changeSet.removedItems.isEmpty, isTrue);
-      expect(changeSet.addedItems, unorderedEquals(data.keys));
+      expect(changeSet.addedItems, unorderedEquals(list));
       expect(changeSet.changedItems.length, equals(3));
 
       // but async onChange drops information about changes in added items.
-      dataObj.onChange.listen(expectAsync1((changeSet) {
-        expect(changeSet.addedItems, unorderedEquals(data.keys));
+      dataList.onChange.listen(expectAsync1((changeSet) {
+        expect(changeSet.addedItems, unorderedEquals(list.keys));
         expect(changeSet.removedItems.isEmpty, isTrue);
         expect(changeSet.changedItems.isEmpty, isTrue);
       }));
 
     });
 
-    test('listen on element added. (T08)', () {
+    test('listen sync & async on multiple indexes removed. (T16)', () {
       // given
-      var dataObj = new Data();
-
-      // when
-      dataObj['key'] = 'value';
-
-      // then
-      dataObj.onChange.listen(expectAsync1((ChangeSet event) {
-        expect(event.changedItems.isEmpty, isTrue);
-        expect(event.removedItems.isEmpty, isTrue);
-        expect(event.addedItems, equals(['key']));
-      }));
-
-    });
-
-    test('listen synchronously on element added. (T09)', () {
-      // given
-      var dataObj = new Data();
+      DataList dataList = new DataList.from(['element1', 'element2', 'element3']);
       var mock = new Mock();
-      dataObj.onChangeSync.listen((event) => mock.handler(event));
+      dataList.onChangeSync.listen((event) => mock.handler(event));
 
       // when
-      dataObj.add('key', 'value', author: 'John Doe');
+      dataList.removeAll([0,1], author: 'John Doe');
 
-      // then
+      //then
       mock.getLogs().verify(happenedOnce);
       var event = mock.getLogs().first.args[0];
       expect(event['author'], equals('John Doe'));
-      expect(event['change'].addedItems, equals(['key']));
-      expect(event['change'].changedItems.keys, equals(['key']));
-    });
+      var changeSet = event['change'];
+      expect(changeSet.removedItems, unorderedEquals([0,1]));
 
-    test('listen synchronously on multiple elements added. (T10)', () {
-      // given
-      var dataObj = new Data();
-      var mock = new Mock();
-      dataObj.onChangeSync.listen((event) => mock.handler(event));
-
-      // when
-      dataObj['key1'] = 'value1';
-      dataObj['key2'] = 'value2';
-
-      // then
-      mock.getLogs().verify(happenedExactly(2));
-      var event1 = mock.getLogs().logs[0].args.first;
-      var event2 = mock.getLogs().logs[1].args.first;
-      expect(event1['change'].addedItems, equals(['key1']));
-      expect(event2['change'].addedItems, equals(['key2']));
-    });
-
-    test('listen on index removed. (T11)', () {
-      // given
-      var data = {'key': 'value'};
-      var dataObj = new Data.from(data);
-
-      // when
-      dataObj.remove('key');
-
-      // then
-      dataObj.onChange.listen(expectAsync1((ChangeSet event) {
-        expect(event.changedItems.isEmpty, isTrue);
-        expect(event.addedItems.isEmpty, isTrue);
-        expect(event.removedItems, unorderedEquals(['key']));
-      }));
-
-    });
-
-    test('listen synchronously on index removed. (T12)', () {
-      // given
-      var dataObj = new Data.from({'key': 'value'});
-      var mock = new Mock();
-      dataObj.onChangeSync.listen((event) => mock.handler(event));
-
-      // when
-      dataObj.remove('key', author: 'John Doe');
-
-      // then
-      mock.getLogs().verify(happenedOnce);
-      var event = mock.getLogs().logs.first.args.first;
-      expect(event['author'], equals('John Doe'));
-      expect(event['change'].addedItems.isEmpty, isTrue);
-      expect(event['change'].removedItems, unorderedEquals(['key']));
-      expect(event['change'].changedItems.length, equals(1));
-
-    });
-
-    test('listen on {index, element} changed. (T13)', () {
-      // given
-      var data = {'key': 'oldValue'};
-      var dataObj = new Data.from(data);
-
-      // when
-      dataObj['key'] = 'newValue';
-
-      // then
-      dataObj.onChange.listen(expectAsync1((ChangeSet event) {
-        expect(event.addedItems.isEmpty, isTrue);
-        expect(event.removedItems.isEmpty, isTrue);
-        expect(event.changedItems.length, equals(1));
-        var change = event.changedItems['key'];
-        expect(change.oldValue, equals('oldValue'));
-        expect(change.newValue, equals('newValue'));
+      // but async onChange drops information about changes in removed items.
+      dataList.onChange.listen(expectAsync1((changeSet) {
+        expect(changeSet.removedItems, unorderedEquals([0,1]));
+        expect(changeSet.addedItems.isEmpty, isTrue);
+        expect(changeSet.changedItems.isEmpty, isTrue);
       }));
     });
 
-    test('propagate multiple changes in single [ChangeSet]. (T14)', () {
+    test('when element is added then changed, only addition is in the [ChangeSet]. (T17)', () {
       // given
-      var data = {'key1': 'value1', 'key2': 'value2'};
-      var dataObj = new Data.from(data);
+      DataList dataList = new DataList();
 
       // when
-      dataObj['key1'] = 'newValue1';
-      dataObj.remove('key2');
-      dataObj['key3'] = 'value3';
+      dataList.add('oldElement');
+      dataList[0] = 'newElement';
 
       // then
-      dataObj.onChange.listen(expectAsync1((ChangeSet event) {
-        expect(event.changedItems.keys, unorderedEquals(['key1']));
-        expect(event.removedItems, unorderedEquals(['key2']));
-        expect(event.addedItems, unorderedEquals(['key3']));
-      }));
-    });
-
-
-    test('when element is added then changed, only addition is in the [ChangeSet]. (T15)', () {
-      // given
-      var data = {'key1': 'value1', 'key2': 'value2'};
-      var dataObj = new Data.from(data);
-
-      // when
-      dataObj['key3'] = 'John Doe';
-      dataObj['key3'] = 'John Doe II.';
-
-      // then
-      dataObj.onChange.listen(expectAsync1((ChangeSet event) {
+      dataList.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.changedItems.keys, unorderedEquals([]));
-        expect(event.addedItems, unorderedEquals(['key3']));
+        expect(event.addedItems, unorderedEquals([0]));
         expect(event.removedItems, unorderedEquals([]));
       }));
     });
@@ -276,68 +274,74 @@ void main() {
 
     test('when existing {index, element} is removed then re-added, this is a change. (T16)', () {
       // given
-      var data = {'key1': 'value1', 'key2': 'value2'};
-      var dataObj = new Data.from(data);
+      DataList dataList = new DataList.from(['oldElement']);
 
       // when
-      dataObj.remove('key1');
-      dataObj['key1'] = 'John Doe II.';
+      dataList.remove(0);
+      dataList[0] = 'newElement';
 
       // then
-      dataObj.onChange.listen(expectAsync1((ChangeSet event) {
-        expect(event.changedItems.keys, unorderedEquals(['key1']));
+      dataList.onChange.listen(expectAsync1((ChangeSet event) {
+        expect(event.changedItems.keys, unorderedEquals([0]));
 
-        Change change = event.changedItems['key1'];
-        expect(change.oldValue, equals('value1'));
-        expect(change.newValue, equals('John Doe II.'));
+        Change change = event.changedItems[0];
+        expect(change.oldValue, equals('oldElement'));
+        expect(change.newValue, equals('newElement'));
 
         expect(event.addedItems, unorderedEquals([]));
         expect(event.removedItems, unorderedEquals([]));
       }));
     });
 
+    //TODO what should happen if remove(2); remove(2); remove(2) ?
+    //TODO add add, remove from middle (also add remove multiple)
+
     test('when {index, element} is changed then removed, only deletion is in the [ChangeSet]. (T17)', () {
       // given
-      var data = {'key1': 'value1', 'key2': 'value2'};
-      var dataObj = new Data.from(data);
-
-      dataObj['key1'] = 'John Doe';
+      DataList dataList = new DataList.from(['oldElement']);
 
       // when
-      dataObj.remove('key1');
+      dataList[0] = 'newElement';
+      dataList.remove(0);
 
       // then
-      dataObj.onChange.listen(expectAsync1((ChangeSet event) {
+      dataList.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.changedItems.keys, unorderedEquals([]));
-        expect(event.removedItems, unorderedEquals(['key1']));
+        expect(event.removedItems, unorderedEquals([0]));
       }));
     });
 
     test('when {index, element} is added then removed, no changes are broadcasted. (T18)', () {
       // given
-      var data = {'key1': 'value1', 'key2': 'value2'};
-      var dataObj = new Data.from(data);
+      DataList dataList = new DataList();
 
       // when
-      dataObj['key3'] = 'John Doe';
-      dataObj.remove('key3');
+      dataList.add('element');
+      dataList.remove(0);
 
       // then
-      dataObj.onChange.listen(protectAsync1((e) => expect(true, isFalse)));
+      dataList.onChange.listen(protectAsync1((e) => expect(true, isFalse)));
     });
 
     test('when {element} is added, changed then removed, no changes are broadcasted. (T19)', () {
       // given
-      var data = {'key1': 'value1', 'key2': 'value2'};
-      var dataObj = new Data.from(data);
+      DataList dataList = new DataList();
 
       // when
-      dataObj['key3'] = 'John Doe';
-      dataObj['key3'] = 'John Doe II';
-      dataObj.remove('key3');
+      dataList.add('oldElement');
+      dataList[0] = 'newElement';
+      dataList.remove(0);
 
       // then
-      dataObj.onChange.listen(protectAsync1((e) => expect(true, isFalse)));
+      dataList.onChange.listen(protectAsync1((e) => expect(true, isFalse)));
+    });
+
+    test('remove multiple indexes. (T04)', () {
+      // given
+
+      // when
+
+      // then
     });
 
     test(' implements List.clear(). (T20)', () {

@@ -92,6 +92,7 @@ import "dart:async";
 import "dart:collection";
 
 part 'src/data.dart';
+part 'src/data_list.dart';
 part 'src/data_collection.dart';
 part 'src/change_set.dart';
 
