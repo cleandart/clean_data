@@ -7,6 +7,7 @@ library data_test;
 import 'package:unittest/unittest.dart';
 import 'package:clean_data/clean_data.dart';
 import 'package:unittest/mock.dart';
+import 'dart:async';
 
 
 void main() {
@@ -352,17 +353,17 @@ void main() {
       // then
       dataObj.onChange.listen(protectAsync1((e) => expect(true, isFalse)));
      });
-    
+
     test('Data implements map.clear(). (T20)', () {
       // given
       var data = {'key1': 'value1', 'key2': 'value2'};
       var dataObj = new Data.from(data);
       var mock = new Mock();
       dataObj.onChangeSync.listen((event) => mock.handler(event));
-      
+
       // when
       dataObj.clear(author: 'John Doe');
-      
+
       // then
       mock.getLogs().verify(happenedOnce);
       var event = mock.getLogs().first.args[0];
@@ -371,51 +372,97 @@ void main() {
       dataObj.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.removedItems, unorderedEquals(['key1', 'key2']));
       }));
-      
+
     });
-    
+
     test('Data implements map.containsValue(). (T21)', () {
       // given
       var data = {'key1': 'value1', 'key2': 'value2'};
-      
+
       // when
       var dataObj = new Data.from(data);
-      
+
       // then
       expect(dataObj.containsValue('value1'), isTrue);
-      expect(dataObj.containsValue('notInValues'), isFalse);  
+      expect(dataObj.containsValue('notInValues'), isFalse);
     });
-    
+
     test('Data implements map.forEach(). (T22)', () {
       // given
       var data = {'key1': 'value1', 'key2': 'value2'};
       var dataObj = new Data.from(data);
       var dataCopy = new Data();
-      
+
       // when
       dataObj.forEach((key, value) {
         dataCopy[key] = value;
       });
-      
+
       // then
       expect(dataCopy, equals(data));
     });
-    
+
     test('Data implements map.putIfAbsent(). (T23)', () {
       // given
       Map<String, int> data = {'key1': "value1"};
       var dataObj = new Data.from(data);
-      
+
       // when
         dataObj.putIfAbsent('key1', () => '');
         dataObj.putIfAbsent('key2', () => '');
-       
+
       // then
       expect(dataObj['key1'], equals('value1'));
       expect(dataObj['key2'], equals(''));
       dataObj.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.addedItems,unorderedEquals(['key2']));
       }));
+    });
+
+    group('nested', () {
+      test('listens to changes of its children.', () {
+        // given
+        var dataObj = new Data.from({'child': new Data()});
+
+        // when
+        dataObj['child']['name'] = 'John Doe';
+
+        // then
+        dataObj.onChange.listen(expectAsync1((ChangeSet event) {
+          expect(event.changedItems['child'].addedItems, equals(['name']));
+        }));
+      });
+      test('remove children.', () {
+        // given
+        var dataObj = new Data.from({'child': new Data()});
+
+        // then
+        dataObj.onChangeSync.listen(expectAsync1((event) {
+          expect(event['change'].changedItems.keys, isEmpty);
+        }));
+
+        // when
+        dataObj.remove('child');
+
+      });
+      test('do not listen to removed children changes.', () {
+        // given
+        var child = new Data();
+        var dataObj = new Data.from({'child': child});
+        var onChange = new Mock();
+
+        // when
+        dataObj.remove('child');
+        var future = new Future.delayed(new Duration(milliseconds: 20), () {
+          dataObj.onChangeSync.listen((e) => onChange(e));
+          child['name'] = 'John Doe';
+        });
+
+        // then
+        return future.then((_) {
+          onChange.getLogs().verify(neverHappened);
+        });
+      });
     });
  });
 }

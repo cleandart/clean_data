@@ -4,6 +4,7 @@
 
 library mapped_collection_view_test;
 
+import 'dart:async';
 import 'package:unittest/unittest.dart';
 import 'package:clean_data/clean_data.dart';
 import '../months.dart';
@@ -137,7 +138,7 @@ void main() {
       months.add(fantasyMonth);
 
       // then
-      monthsHours.onBeforeAdded.listen(expectAsync1((MappedDataView mdv) {
+      monthsHours.onBeforeAdd.listen(expectAsync1((MappedDataView mdv) {
         expect(mdv.source, equals(fantasyMonth));
         expect(monthsHours.contains(fantasyMonth), isFalse);
       }));
@@ -151,27 +152,66 @@ void main() {
       months.remove(january);
 
       // then
-      monthsHours.onBeforeRemoved.listen(expectAsync1((MappedDataView mdv) {
+      monthsHours.onBeforeRemove.listen(expectAsync1((MappedDataView mdv) {
         expect(mdv.source, equals(january));
         expect(monthsHours.contains(mdv), isTrue);
       }));
     });
 
-
     test('dispose method.', () {
-       // given
-       var monthsHours = months.map(hoursInMonth);
+      // given
+      var monthsHours = months.map(hoursInMonth);
 
-       //then
-       monthsHours.onChangeSync.listen((changeSet) => guardAsync(() {
-         expect(true, isFalse, reason: 'Should not be called.');
-       }));
+      //then
+      monthsHours.onChangeSync.listen((changeSet) => guardAsync(() {
+        expect(true, isFalse, reason: 'Should not be called.');
+      }));
 
-       // when
-       monthsHours.dispose();
+      // when
+      monthsHours.dispose();
 
-       months.remove(january);
-       february['days'] = 1;
-     });
+      months.remove(january);
+      february['days'] = 1;
+    });
+
+    test('after removing, MappedDataView does not listen to changes on source object anymore. ', () {
+      // given
+      var monthsHours = months.map(hoursInMonth);
+      var mappedView = monthsHours.first;
+      var month = mappedView.source;
+
+      // when
+      months.remove(month);
+      Timer.run(expectAsync0(() {
+        month['temperature'] = -10;
+        mappedView.onChange.listen((c) => expect(true, isFalse));
+      }));
+
+      // then
+      monthsHours.onChange.listen(expectAsync1((ChangeSet event) {
+        expect(event.removedItems.length, equals(1));
+      }));
+    });
+
+    test('after removing, MappedCollection does not listen to changes on MappedDataView object anymore. ', () {
+      // given
+      var monthsHours = months.map(hoursInMonth);
+      var mappedView = monthsHours.first;
+      var month = mappedView.source;
+
+      // when
+      months.remove(month);
+      Timer.run(expectAsync0(() {
+        month['temperature'] = -10;
+        monthsHours.onChange.listen(
+            (event) => expect(event.changedItems.length, equals(0))
+        );
+      }));
+
+      // then
+      monthsHours.onChange.listen(expectAsync1((ChangeSet event) {
+        expect(event.removedItems.length, equals(1));
+      }));
+    });
   });
 }
