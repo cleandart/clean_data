@@ -629,7 +629,7 @@ void main() {
       }));
     });
 
-    /*
+
     /**
      * Returns an [Iterable] that iterates over the objects in the range
      * [start] inclusive to [end] exclusive.
@@ -639,10 +639,10 @@ void main() {
       DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
 
       // when
-      var range = dataList.getRange(1, 3);
+      Iterable range = dataList.getRange(1, 3);
 
       // then
-      expect(range, equals(['element1', 'element2']));
+      expect(new List.from(range), equals(['element2', 'element3']));
     });
 
     /**
@@ -654,14 +654,14 @@ void main() {
       DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
 
       // when
-      dataList.setAll(1, ['new2', 'new3']);
+      dataList.setAll(1, ['new2', 'new3', 'new4']);
 
       // then
       expect(new List.from(dataList), unorderedEquals(
-          ['element1','new2', 'new3', 'element4']));
+          ['element1','new2', 'new3', 'new4']));
 
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
-        expect(event.changedItems.keys, unorderedEquals([1,2]));
+        expect(event.changedItems.keys, unorderedEquals([1,2,3]));
 
         Change change1 = event.changedItems[1];
         expect(change1.oldValue, equals('element2'));
@@ -671,9 +671,21 @@ void main() {
         expect(change2.oldValue, equals('element3'));
         expect(change2.newValue, equals('new3'));
 
+        Change change3 = event.changedItems[3];
+        expect(change3.oldValue, equals('element4'));
+        expect(change3.newValue, equals('new4'));
+
         expect(event.addedItems, unorderedEquals([]));
         expect(event.removedItems, unorderedEquals([]));
       }));
+    });
+
+    test(' implements List.setAll(). (T31.5)', () {
+      // given
+      DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
+
+      // then
+      expect(()=>dataList.setAll(1, ['new2', 'new3']), throwsArgumentError);
     });
 
     /**
@@ -684,10 +696,12 @@ void main() {
       DataList dataList = new DataList.from(['element','element', 'kitty']);
 
       // when
-      var index = dataList.lastIndexOf('element');
+      var index1 = dataList.lastIndexOf('element');
+      var index0 = dataList.lastIndexOf('element', 0);
 
       // then
-      expect(index, equals(1));
+      expect(index1, equals(1));
+      expect(index0, equals(0));
     });
 
     /**
@@ -699,10 +713,12 @@ void main() {
       DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
 
       // when
-      var range = dataList.sublist(1, 3);
+      var range13 = dataList.sublist(1, 3);
+      var range1e= dataList.sublist(1);
 
       // then
-      expect(range, equals(['element1', 'element2']));
+      expect(new List.from(range13), equals(['element2', 'element3']));
+      expect(new List.from(range1e), equals(['element2', 'element3', 'element4']));
     });
 
     /**
@@ -713,12 +729,14 @@ void main() {
       DataList dataList = new DataList.from(['kitty','element', 'element']);
 
       // when
-      var index = dataList.indexOf('element');
+      var index1 = dataList.indexOf('element');
+      var index2 = dataList.indexOf('element', 2);
 
       // then
-      expect(index, equals(1));
+      expect(index1, equals(1));
+      expect(index2, equals(2));
     });
-
+/*
     /**
      * Removes all objects from this list that satisfy [test].
      */

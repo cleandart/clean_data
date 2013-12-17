@@ -1,9 +1,8 @@
 // Copyright (c) 2013, the Clean project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//TODO why not observable?
 //TODO nested Data objects
-//TODO refactor with Data.dart
+//TODO consider functions as subList, getRange, etc. to return DataList
 
 part of clean_dart;
 
@@ -40,6 +39,9 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
    */
   void replaceRange(int start, int end, Iterable iterable, {author: null}){
     _checkRange(start, end);
+    if(iterable.length < end-start){
+      throw new ArgumentError("Must give at least ${end - start} elements in iterable.");
+    }
 
     var iter = iterable.iterator;
     iter.moveNext();
@@ -56,7 +58,7 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
    * [start] inclusive to [end] exclusive.
    */
   Iterable getRange(int start, int end){
-    //TODO
+    return _elements.getRange(start, end);
   }
 
   /**
@@ -64,14 +66,14 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
    * at position [index] in this list.
    */
   void setAll(int index, Iterable iterable, {author: null}){
-    //TODO
+    replaceRange(index, _elements.length, iterable, author: author);
   }
 
   /**
    * Returns the last index of [element] in this list.
    */
   int lastIndexOf(dynamic element, [int start]){
-    //TODO
+    return _elements.lastIndexOf(element, start);
   }
 
   /**
@@ -79,7 +81,7 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
    * exclusive.
    */
   List sublist(int start, [int end]){
-    //TODO
+    return _elements.sublist(start, end);
   }
 
   /**
@@ -93,7 +95,7 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
    * Returns the first index of [element] in this list.
    */
   int indexOf(dynamic element, [int start = 0]){
-    //TODO
+    return _elements.indexOf(element, start);
   }
 
   /**
