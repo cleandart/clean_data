@@ -205,6 +205,7 @@ class Data extends DataView with DataChangeListenersMixin<String> implements Map
       dataObj[key] = data[key];
     }
     dataObj._clearChanges();
+    //TODO should be also _clearChangesSync?
     return dataObj;
   }
 

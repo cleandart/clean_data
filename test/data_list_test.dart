@@ -1,7 +1,6 @@
 // Copyright (c) 2013, the Clean project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-//TODO refactor for DataList
 
 library data_list_test;
 
@@ -24,7 +23,6 @@ List groupChanges(Mock mock, int size){
 }
 
 void main() {
-  //TODO
   group('(DataList)', () {
 
     test('initialize. (T01)', () {
@@ -92,10 +90,19 @@ void main() {
       }
     });
 
-    test('remove multiple indexes. (T06)', () {
+    test('range test. (T06a)', () {
       // given
-      var list = ['element1', 'element2', 'element3'];
-      DataList dataList = new DataList();
+      DataList dataList = new DataList.from(['element1', 'element2', 'element3']);
+
+      // when
+      expect(() => dataList.removeRange(-1, 1), throwsArgumentError);
+      expect(() => dataList.removeRange(1, 0), throwsArgumentError);
+      expect(() => dataList.removeRange(1, 4), throwsArgumentError);
+    });
+
+    test('remove multiple indexes. (T06b)', () {
+      // given
+      DataList dataList = new DataList.from(['element1', 'element2', 'element3']);
 
       // when
       dataList.removeAt(2);
@@ -108,7 +115,6 @@ void main() {
       expect(dataList.length, 0);
     });
 
-    /*
     test('listen on element added. (T08)', () {
       // given
       DataList dataList = new DataList();
@@ -122,7 +128,6 @@ void main() {
         expect(event.removedItems.isEmpty, isTrue);
         expect(event.addedItems, equals([0]));
       }));
-
     });
 
     test('listen synchronously on element added. (T09)', () {
@@ -161,6 +166,7 @@ void main() {
     });
 
     test('listen on index removed. (T11)', () {
+      print("Test 11");
       // given
       DataList dataList = new DataList.from(['element1']);
 
@@ -169,13 +175,14 @@ void main() {
 
       // then
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
-        expect(event.changedItems.isEmpty, isTrue);
-        expect(event.addedItems.isEmpty, isTrue);
+        expect(event.changedItems.keys, unorderedEquals([]));
+        expect(event.addedItems, unorderedEquals([]));
         expect(event.removedItems, unorderedEquals([0]));
       }));
     });
 
     test('listen synchronously on index removed. (T12)', () {
+      print("Test 12");
       // given
       DataList dataList = new DataList.from(['element1']);
       var mock = new Mock();
@@ -194,6 +201,7 @@ void main() {
     });
 
     test('listen on {index, element} changed. (T13)', () {
+      print("Test 13");
       // given
       DataList dataList = new DataList.from(['oldElement']);
 
@@ -212,6 +220,7 @@ void main() {
     });
 
     test('propagate multiple changes in single [ChangeSet]. (T14)', () {
+      print("Test 14");
       // given
       DataList dataList = new DataList.from(['element1', 'element2']);
 
@@ -223,11 +232,12 @@ void main() {
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.changedItems.keys, unorderedEquals([0]));
         expect(event.removedItems, unorderedEquals([]));
-        expect(event.addedItems, unorderedEquals([1]));
+        expect(event.addedItems, unorderedEquals([2]));
       }));
     });
 
     test('propagate multiple changes in single [ChangeSet]. (T14.5)', () {
+      print("Test 14.5");
       // given
       DataList dataList = new DataList.from(['element1', 'element2']);
 
@@ -244,6 +254,7 @@ void main() {
     });
 
     test('listen on multiple elements added. (T15)', () {
+      print("Test 15");
       // given
       List list = ['element1', 'element2', 'element3'];
       DataList dataList = new DataList();
@@ -262,12 +273,12 @@ void main() {
 
       var changeSet = event['change'];
       expect(changeSet.removedItems.isEmpty, isTrue);
-      expect(changeSet.addedItems, unorderedEquals(list));
+      expect(changeSet.addedItems, unorderedEquals([0,1,2]));
       expect(changeSet.changedItems.length, equals(3));
 
       // but async onChange drops information about changes in added items.
       dataList.onChange.listen(expectAsync1((changeSet) {
-        expect(changeSet.addedItems, unorderedEquals(list.keys));
+        expect(changeSet.addedItems, unorderedEquals([0,1,2]));
         expect(changeSet.removedItems.isEmpty, isTrue);
         expect(changeSet.changedItems.isEmpty, isTrue);
       }));
@@ -275,30 +286,33 @@ void main() {
     });
 
     test('listen sync & async on multiple indexes removed. (T16)', () {
+      print("Test 16");
+
       // given
       DataList dataList = new DataList.from(['element1', 'element2', 'element3']);
       var mock = new Mock();
       dataList.onChangeSync.listen((event) => mock.handler(event));
 
       // when
-      dataList.removeAll([0,1], author: 'John Doe');
+      dataList.removeRange(1,3, author: 'John Doe');
 
       //then
       mock.getLogs().verify(happenedOnce);
       var event = mock.getLogs().first.args[0];
       expect(event['author'], equals('John Doe'));
       var changeSet = event['change'];
-      expect(changeSet.removedItems, unorderedEquals([0,1]));
+      expect(changeSet.removedItems, unorderedEquals([1,2]));
 
       // but async onChange drops information about changes in removed items.
       dataList.onChange.listen(expectAsync1((changeSet) {
-        expect(changeSet.removedItems, unorderedEquals([0,1]));
+        expect(changeSet.removedItems, unorderedEquals([1,2]));
         expect(changeSet.addedItems.isEmpty, isTrue);
         expect(changeSet.changedItems.isEmpty, isTrue);
       }));
     });
 
     test('when element is added then changed, only addition is in the [ChangeSet]. (T17)', () {
+      print("Test 17");
       // given
       DataList dataList = new DataList();
 
@@ -316,12 +330,14 @@ void main() {
 
 
     test('when existing {index, element} is removed then re-added, this is a change. (T18', () {
+      print("Test 18");
+
       // given
       DataList dataList = new DataList.from(['oldElement']);
 
       // when
       dataList.removeAt(0);
-      dataList[0] = 'newElement';
+      dataList.add('newElement');
 
       // then
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
@@ -375,7 +391,7 @@ void main() {
       // then
       dataList.onChange.listen(protectAsync1((e) => expect(true, isFalse)));
     });
-
+/*
     test('listen elements inserted to middle. (T22)', () {
       // given
       DataList dataList = new DataList.from(['element1','element2', 'element3']);

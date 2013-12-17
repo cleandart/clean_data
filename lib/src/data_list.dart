@@ -70,7 +70,7 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
    * Removes the object at position [index] from this list.
    */
   dynamic removeAt(int index, {author: null}){
-    //TODO
+    removeRange(index, index+1, author: author);
   }
 
   /**
@@ -155,8 +155,28 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
   /**
    * Removes the objects in the range [start] inclusive to [end] exclusive.
    */
+  //TODO check if optimal when removing from the end of the list
   void removeRange(int start, int end, {author: null}){
-    //TODO
+    if(end <= start || start < 0 || _elements.length < end){
+      throw new ArgumentError("Incorrect range [$start, $end) for DataList of size ${_elements.length}");
+    }
+
+    int change_end_i = _elements.length - end + start;
+
+    // The list will be shifted left after the removal.
+    // Changed keys [start, change_end_i) will be changed for [end, end + change_end_i - start)
+    for(int key=start ; key<change_end_i ; key++){
+      _markChanged(key, new Change(_elements[key], _elements[end + key - start]));
+    };
+    // Removed Keys [change_end_i, _elements.length).
+    for(int key=change_end_i ; key<_elements.length ; key++){
+      _markChanged(key, new Change(_elements[key], null));
+      _markRemoved(key);
+    };
+
+    _elements.removeRange(start, end);
+
+    _notify(author: author);
   }
 
   /**
@@ -179,9 +199,11 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
   /**
    * Creates a new [DataList] object from [Iterable]
    */
-  factory DataList.from(Iterable other, {author: null}) {
+  factory DataList.from(Iterable other) {
     DataList result = new DataList();
-    result.addAll(other, author: author);
+    other.forEach((element)=>result._elements.add(element));
+    result._clearChanges();
+    //TODO should be also _clearChangesSync?
     return result;
   }
 
@@ -211,11 +233,15 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
   /**
    * Adds all key-value pairs of [other] to end of [DataList].
    */
+  //TODO add to particular indexes
   void addAll(Iterable other, {author: null}) {
     other.forEach((element) {
-      _markAdded(_elements.length);
+      int key = _elements.length;
+      _markChanged(key, new Change(null, element));
+      _markAdded(key);
       _elements.add(element);
     });
+
     _notify(author: author);
   }
 
@@ -223,7 +249,8 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
    * Assigns the [value] to the [key] field.
    */
   void operator[]=(int index, value) {
-    //TODO
+    _markChanged(index, new Change(_elements[index], value));
+    _elements[index] = value;
     _notify();
   }
 
@@ -231,21 +258,7 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
    * Removes element with [index] from the data object.
    */
   bool remove(int index, {author: null}) {
-    removeAll([index], author: author);
-  }
-
-  /**
-   * Remove all [keys] from the data object.
-   */
-  void removeAll(List<int> indexes, {author: null}) {
-    //TODO
-    /*
-    for (var key in keys) {
-      _markChanged(key, new Change(_fields[key], null));
-      _markRemoved(key);
-      _fields.remove(key);
-    }
-    _notify(author: author); */
+    removeRange(index, index+1, author: author);
   }
 
   void clear({author: null}) {
