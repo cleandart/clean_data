@@ -544,7 +544,6 @@ void main() {
       }));
     });
 
-    /*
     test(' implements List.clear(). (T27)', () {
       // given
       DataList dataList = new DataList.from(['element1','element2', 'element3']);
@@ -559,7 +558,7 @@ void main() {
         expect(event.removedItems, unorderedEquals([0,1,2]));
       }));
     });
-
+/*
     /**
      * Returns an [Iterable] of the objects in this list in reverse order.
      */

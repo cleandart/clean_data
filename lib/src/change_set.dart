@@ -121,7 +121,6 @@ class ChangeSet {
     });
   }
 
-
   /**
    * Returns true if there are no changes in the [ChangeSet].
    */

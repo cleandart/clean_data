@@ -137,7 +137,7 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
     };
     // Added keys [_elements.length, _elements.length + iterable.length).
     for(int key=_elements.length ; key<_elements.length + iterable.length ; key++){
-      _markChanged(key, new Change(null, key - iterable.length));
+      _markChanged(key, new Change(null, _elements[key - iterable.length]));
       _markAdded(key);
     };
 
@@ -176,8 +176,13 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
    */
   //TODO check if optimal when removing from the end of the list
   void removeRange(int start, int end, {author: null}){
-    if(end <= start || start < 0 || _elements.length < end){
+    //bad interval
+    if(end < start || start < 0 || _elements.length < end){
       throw new ArgumentError("Incorrect range [$start, $end) for DataList of size ${_elements.length}");
+    }
+    //nothing to do
+    if(end == start){
+      return;
     }
 
     int change_end_i = _elements.length - end + start;
@@ -281,6 +286,6 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
   }
 
   void clear({author: null}) {
-    //TODO
+    removeRange(0, _elements.length, author:author);
   }
 }
