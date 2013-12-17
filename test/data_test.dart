@@ -581,6 +581,26 @@ void main() {
           onChange.getLogs().verify(happenedOnce);
         });
       });
+
+      //TODO
+      /*
+      test('when child Data is removed, changed and then added, only change is propagated.', () {
+        // given
+        var child = new Data();
+        var dataObj = new Data.from({'child': child});
+        var onChange = new Mock();
+
+        // when
+        dataObj.remove('child');
+        child['name'] = 'John Doe';
+        dataObj.add('child', child);
+
+        // then
+        dataObj.onChange.listen(expectAsync1((ChangeSet event) {
+          expect(event.changedItems['child'].addedItems, equals(['name']));
+        }));
+      });
+      */
     });
 
     group('(Nested DataList)', () {

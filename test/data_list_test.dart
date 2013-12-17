@@ -395,13 +395,13 @@ void main() {
       dataList.onChangeSync.listen((event) => mock.handler(event));
 
       // when
-      dataList.insertAll(1, ['element1.1', 'element1.2', 'element1.5']);
+      dataList.insertAll(1, ['element1.1', 'element1.25', 'element1.5']);
 
       // then
       expect(new List.from(dataList), unorderedEquals(
           ['element1', 'element1.1', 'element1.25', 'element1.5', 'element2']));
 
-      mock.getLogs().verify(happenedExactly(3));
+      mock.getLogs().verify(happenedExactly(1));
       var change = mock.getLogs().logs.first.args.first['change'];
       expect(change.changedItems.keys, unorderedEquals([1,2,3,4]));
 
@@ -410,7 +410,7 @@ void main() {
       expect(change1.newValue, equals('element1.1'));
 
       Change change2 = change.changedItems[2];
-      expect(change2.oldValue, equals('element3'));
+      expect(change2.oldValue, equals(null));
       expect(change2.newValue, equals('element1.25'));
 
       Change change3 = change.changedItems[3];
@@ -421,21 +421,17 @@ void main() {
       expect(change4.oldValue, equals(null));
       expect(change4.newValue, equals('element2'));
 
-      expect(change.addedItems, unorderedEquals([3,4]));
+      expect(change.addedItems, unorderedEquals([2,3,4]));
       expect(change.removedItems, unorderedEquals([]));
 
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
-        expect(event.changedItems.keys, unorderedEquals([1,2]));
+        expect(event.changedItems.keys, unorderedEquals([1]));
 
         Change change1 = event.changedItems[1];
         expect(change1.oldValue, equals('element2'));
         expect(change1.newValue, equals('element1.1'));
 
-        Change change2 = event.changedItems[2];
-        expect(change2.oldValue, equals('element3'));
-        expect(change2.newValue, equals('element1.25'));
-
-        expect(event.addedItems, unorderedEquals([3,4]));
+        expect(event.addedItems, unorderedEquals([2,3,4]));
         expect(event.removedItems, unorderedEquals([]));
       }));
     });
@@ -707,6 +703,24 @@ void main() {
       }));
     });
 
+    test(' implements List.removeRange() from end. (T44.5)', () {
+      // given
+      DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
+
+      // when
+      dataList.removeRange(1,4);
+
+      // then
+      expect(new List.from(dataList), unorderedEquals(
+          ['element1']));
+
+      dataList.onChange.listen(expectAsync1((ChangeSet event) {
+        expect(event.changedItems.keys, unorderedEquals([]));
+        expect(event.addedItems, unorderedEquals([]));
+        expect(event.removedItems, unorderedEquals([1,2,3]));
+      }));
+    });
+
     test(' removeAll (T46)', () {
       // given
       DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4', 'element5']);
@@ -734,8 +748,7 @@ void main() {
       }));
     });
 
-/*
-    group('(Nested)', () {
+    group('(Nested Data)', () { /*
       test('listens to changes of its children.', () {
         // given
         DataList dataList = new DataList.from([new Data()]);
@@ -746,6 +759,27 @@ void main() {
         // then
         dataList.onChange.listen(expectAsync1((ChangeSet event) {
           expect(event.changedItems[0].addedItems, equals(['name']));
+        }));
+      });
+
+      test('listens to changes of its children with insertAll', () {
+        // given
+        List childs = [new Data(),new Data(),new Data(),new Data()];
+        DataList dataList = new DataList.from([childs[0], childs[3]]);
+
+        // when
+        dataList.insertAll(1, [childs[1], childs[2]]);
+        dataList[0]['name'] = 'John Doe';
+        dataList[1]['name'] = 'Mills';
+        dataList[2]['name'] = 'Somerset';
+        dataList[3]['name'] = 'Tracy';
+
+        // then
+        dataList.onChange.listen(expectAsync1((ChangeSet event) {
+          expect(event.changedItems[0].addedItems, equals(['name']));
+          expect(event.changedItems[1].addedItems, equals(['name']));
+          expect(event.changedItems[2].addedItems, equals(['name']));
+          expect(event.changedItems[3].addedItems, equals(['name']));
         }));
       });
 
@@ -788,63 +822,38 @@ void main() {
         });
       });
 
-      //TODO is this necessary?
-      test('listen on multiple children added.', () {
+      test('do not listen after remove multiple children with removeRange.', () {
         // given
-        var data = [new Data(), new Data(), new Data()];
-        DataList dataList = new DataList();
-        var mock = new Mock();
-        dataList.onChangeSync.listen((event) => mock.handler(event));
+        var child1 = new Data();
+        var child2 = new Data();
+        DataList dataList = new DataList.from([new Data(), child1, child2]);
+        var onRemove = new Mock();
+        var onChange = new Mock();
+        dataList.onChangeSync.listen((event) => onRemove.handler(event));
 
         // when
-        dataList.addAll(data, author: 'John Doe');
-
-        // then sync onChange propagates information about all changes and
-        // adds
-        mock.getLogs().verify(happenedOnce);
-        var event = mock.getLogs().first.args.first;
-        expect(event['author'], equals('John Doe'));
-
-        var changeSet = event['change'];
-        expect(changeSet.removedItems.isEmpty, isTrue);
-        expect(changeSet.addedItems, unorderedEquals([0,1,2]));
-        expect(changeSet.changedItems.length, equals(3));
-
-        // but async onChange drops information about changes in added items.
-        dataList.onChange.listen(expectAsync1((changeSet) {
-          expect(changeSet.addedItems, unorderedEquals([0,1,2]));
-          expect(changeSet.removedItems.isEmpty, isTrue);
-          expect(changeSet.changedItems.isEmpty, isTrue);
-        }));
-      });
-
-      //TODO is this necessary?
-      test('remove multiple children.', () {
-        // given
-        DataList dataList = new DataList.from([new Data(), new Data(), new Data()]);
-        List keysToRemove = [0, 1];
-        var mock = new Mock();
-        dataList.onChangeSync.listen((event) => mock.handler(event));
-
-        // when
-        dataList.removeAll(keysToRemove, author: 'John Doe');
+        dataList.removeRange(1,3, author: 'John Doe');
 
         // then
-        mock.getLogs().verify(happenedOnce);
-        var event = mock.getLogs().first.args[0];
-        expect(event['author'], equals('John Doe'));
-        var changeSet = event['change'];
-        expect(changeSet.removedItems, unorderedEquals(keysToRemove));
+        var future = new Future.delayed(new Duration(milliseconds: 20), () {
+          dataList.onChangeSync.listen((e) => onChange(e));
+          child1['name'] = 'John Doe';
+          child2['name'] = 'Mills';
+        });
+
+        future.then((_) {
+          onChange.getLogs().verify(neverHappened);
+        });
 
         // but async onChange drops information about changes in removed items.
         dataList.onChange.listen(expectAsync1((changeSet) {
-          expect(changeSet.removedItems, unorderedEquals(keysToRemove));
+          expect(changeSet.removedItems, unorderedEquals([1,2]));
           expect(changeSet.addedItems.isEmpty, isTrue);
           expect(changeSet.changedItems.isEmpty, isTrue);
         }));
       });
 
-      test('when property is added then removed, no changes are broadcasted. (T18)', () {
+      test('when child Data is added then removed, no changes are broadcasted. (T18)', () {
         // given
         DataList dataList = new DataList();
         var child = new Data();
@@ -900,8 +909,62 @@ void main() {
         future.then((_) {
           onChange.getLogs().verify(happenedOnce);
         });
-      });
+      }); */
     });
-    */
+/*
+    //Testing only part of functionality
+    group('(Nested DataList)', () {
+        test('listens to changes of its children.', () {
+          // given
+          DataList dataList = new DataList.from([new DataList()]);
+
+          // when
+          dataList[0].add('John Doe');
+
+          // then
+          dataList.onChange.listen(expectAsync1((ChangeSet event) {
+            expect(event.changedItems[0].addedItems, equals([0]));
+          }));
+        });
+
+        test('do not listen to removed children changes.', () {
+          // given
+          var child = new DataList();
+          DataList dataList = new DataList.from([child]);
+          var onChange = new Mock();
+
+          // when
+          dataList.remove(0);
+          var future = new Future.delayed(new Duration(milliseconds: 20), () {
+            dataList.onChangeSync.listen((e) => onChange(e));
+            child.add('John Doe');
+          });
+
+          // then
+          future.then((_) {
+            onChange.getLogs().verify(neverHappened);
+          });
+        });
+
+        test('do not listen to changed children changes.', () {
+          // given
+          var childOld = new DataList();
+          var childNew = new DataList();
+          DataList dataList = new DataList.from([childOld]);
+          var onChange = new Mock();
+
+          // when
+          dataList[0] = childNew;
+          var future = new Future.delayed(new Duration(milliseconds: 20), () {
+            dataList.onChangeSync.listen((e) => onChange(e));
+            childOld.add('John Doe');
+          });
+
+          // then
+          future.then((_) {
+            onChange.getLogs().verify(neverHappened);
+          });
+        });
+    });*/
  });
 }

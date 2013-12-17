@@ -5,6 +5,7 @@
 //TODO consider functions as subList, getRange, etc. to return DataList
 //TODO expand(Iterable) ?
 //TODO if we do []= without author and then _notify(author), what happens?
+//TODO both remove and removeAt() ?
 
 part of clean_dart;
 
@@ -12,7 +13,9 @@ part of clean_dart;
  * List with change notifications. Change set contains indexes which were changed.
  */
 
-class DataList extends Object with ListMixin, ChangeNotificationsMixin implements List {
+class DataList extends Object
+  with ListMixin, ChangeNotificationsMixin, DataChangeListenersMixin<int>
+    implements List {
 
   Iterator get iterator => _elements.iterator;
 
@@ -61,6 +64,11 @@ class DataList extends Object with ListMixin, ChangeNotificationsMixin implement
       int key = _elements.length;
       _markChanged(key, new Change(null, element));
       _markAdded(key);
+
+      if(element is Data || element is DataList){
+        _addOnDataChangeListener(key, element);
+      }
+
       _elements.add(element);
     });
 
@@ -122,6 +130,11 @@ class DataList extends Object with ListMixin, ChangeNotificationsMixin implement
 
     for(int i=toRemove.length-1; i>=0; i--){
       int key = toRemove[i];
+
+      if(_elements[key] is Data || _elements[key] is DataList){
+        _removeOnDataChangeListener(key);
+      }
+
       removeAt(key);
     }
   }
@@ -135,15 +148,20 @@ class DataList extends Object with ListMixin, ChangeNotificationsMixin implement
     // The list will be shifted right after the addition.
     // Changed keys for iterable [index, index + iterable.length)
     for(int key=index ; key<index+iterable.length ; key++){
-      _markChanged(key, new Change(_elements[key], other[key-index]));
+      var added = other[key-index];
+      _markChanged(key, new Change((key>=_elements.length) ? null:_elements[key], added));
+
+      //TODO refactor this test to _addOnData...blah,blah
+      if(added is DataView || added is DataList){
+        _addOnDataChangeListener(key, other[key-index]);
+      }
     };
     // Changed keys for _elements
-    for(int key=index + iterable.length ; key<_elements.length ; key++){
-      _markChanged(key, new Change(_elements[key], _elements[key - iterable.length]));
+    for(int key=index + iterable.length ; key<_elements.length + iterable.length ; key++){
+      _markChanged(key, new Change((key>=_elements.length) ? null:_elements[key], _elements[key - iterable.length]));
     };
     // Added keys [_elements.length, _elements.length + iterable.length).
     for(int key=_elements.length ; key<_elements.length + iterable.length ; key++){
-      _markChanged(key, new Change(null, _elements[key - iterable.length]));
       _markAdded(key);
     };
 
@@ -188,6 +206,11 @@ class DataList extends Object with ListMixin, ChangeNotificationsMixin implement
     // Removed keys [change_end_i, _elements.length).
     for(int key=change_end_i ; key<_elements.length ; key++){
       _markChanged(key, new Change(_elements[key], null));
+
+      if(_elements[key] is DataView || _elements[key] is DataList){
+        _removeOnDataChangeListener(key);
+      }
+
       _markRemoved(key);
     };
 
