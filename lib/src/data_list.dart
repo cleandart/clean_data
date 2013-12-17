@@ -4,6 +4,7 @@
 //TODO nested Data objects
 //TODO consider functions as subList, getRange, etc. to return DataList
 //TODO expand(Iterable) ?
+//TODO if we do []= without author and then _notify(author), what happens?
 
 part of clean_dart;
 
@@ -19,6 +20,63 @@ class DataList extends Object with ListMixin, ChangeNotificationsMixin implement
    * Number of elements in this [DataList].
    */
   int get length => _elements.length;
+
+  final List _elements = new List();
+
+  /**
+   * Creates an empty [DataList] object.
+   */
+  DataList();
+
+  /**
+   * Creates a new [DataList] object from [Iterable]
+   */
+  factory DataList.from(Iterable other) {
+    DataList result = new DataList();
+    other.forEach((element)=>result._elements.add(element));
+    result._clearChanges();
+    //TODO should be also _clearChangesSync?
+    return result;
+  }
+
+  dynamic operator[](index) => _elements[index];
+  void operator []=(int index, dynamic value){
+    _markChanged(index, new Change(_elements[index], value));
+    _elements[index] = value;
+    _notify();
+  }
+
+  /**
+   * Adds the [value] to the end of [DataList].
+   */
+  void add(dynamic value, {author: null}) {
+    addAll([value], author: author);
+  }
+
+  /**
+   * Adds all key-value pairs of [other] to end of [DataList].
+   */
+  void addAll(Iterable other, {author: null}) {
+    other.forEach((element) {
+      int key = _elements.length;
+      _markChanged(key, new Change(null, element));
+      _markAdded(key);
+      _elements.add(element);
+    });
+
+    _notify(author: author);
+  }
+
+  /**
+   * Removes element with [index] from the data object.
+   */
+  bool remove(int index, {author: null}) {
+    removeRange(index, index+1, author: author);
+  }
+
+  void clear({author: null}) {
+    removeRange(0, _elements.length, author:author);
+  }
 
   bool _checkRange(int start, int end){
     if(end < start || start < 0 || _elements.length < end){
@@ -96,52 +154,6 @@ class DataList extends Object with ListMixin, ChangeNotificationsMixin implement
       int key = toRemove[i];
       removeAt(key);
     }
-  }
-
-  /**
-   * Sorts this list according to the order specified by the [compare] function.
-   */
-  //TODO author (problem with named and positional paramters)
-  void sort([int compare(dynamic a, dynamic b), author=null]){
-    List target = new List.from(_elements, growable: false);
-    target.sort(compare);
-
-    for(int key=0; key<_elements.length ; key++){
-      _markChanged(key, new Change(_elements[key], target[key]));
-      _elements[key] = target[key];
-    }
-
-    _notify(author: author);
-  }
-
-  /**
-   * Sets the objects in the range [start] inclusive to [end] exclusive
-   * to the given [fillValue].
-   */
-  //TODO author
-  void fillRange(int start, int end, [dynamic fillValue, author=null]){
-    for(int key=start ; key<end; key++){
-      _markChanged(key, new Change(_elements[key], fillValue));
-      _elements[key] = fillValue;
-    }
-
-    _notify(author: author);
-  }
-
-  /**
-   * Shuffles the elements of this list randomly.
-   */
-  //TODO author
-  void shuffle([Random random, author=null]){
-    List target = new List.from(_elements, growable: false);
-    target.shuffle(random);
-
-    for(int key=0; key<_elements.length ; key++){
-      _markChanged(key, new Change(_elements[key], target[key]));
-      _elements[key] = target[key];
-    }
-
-    _notify(author: author);
   }
 
   /**
@@ -223,80 +235,4 @@ class DataList extends Object with ListMixin, ChangeNotificationsMixin implement
     replaceRange(start, end, iterable, skipCount: skipCount, author: author);
   }
 
-
-  final List _elements = new List();
-
-  /**
-   * Creates an empty [DataList] object.
-   */
-  DataList();
-
-  /**
-   * Creates a new [DataList] object from [Iterable]
-   */
-  factory DataList.from(Iterable other) {
-    DataList result = new DataList();
-    other.forEach((element)=>result._elements.add(element));
-    result._clearChanges();
-    //TODO should be also _clearChangesSync?
-    return result;
-  }
-
-  dynamic operator[](index) => _elements[index];
-
-  /**
-   * Returns true if there is no {key, value} pair in the data object.
-   */
-  bool get isEmpty {
-    return _elements.isEmpty;
-  }
-
-  /**
-   * Returns true if there is at least one {key, value} pair in the data object.
-   */
-  bool get isNotEmpty {
-    return _elements.isNotEmpty;
-  }
-
-  /**
-   * Adds the [value] to the end of [DataList].
-   */
-  void add(dynamic value, {author: null}) {
-    addAll([value], author: author);
-  }
-
-  /**
-   * Adds all key-value pairs of [other] to end of [DataList].
-   */
-  //TODO add to particular indexes
-  void addAll(Iterable other, {author: null}) {
-    other.forEach((element) {
-      int key = _elements.length;
-      _markChanged(key, new Change(null, element));
-      _markAdded(key);
-      _elements.add(element);
-    });
-
-    _notify(author: author);
-  }
-
-  /**
-   * Assigns the [value] to the [key] field.
-   */
-  void operator[]=(int index, value) {
-    _markChanged(index, new Change(_elements[index], value));
-    _elements[index] = value;
-    _notify();
-  }
-
-  /**
-   * Removes element with [index] from the data object.
-   */
-  bool remove(int index, {author: null}) {
-    removeRange(index, index+1, author: author);
-  }
-
-  void clear({author: null}) {
-    removeRange(0, _elements.length, author:author);
-  }
 }

@@ -8,20 +8,6 @@ import 'package:unittest/unittest.dart';
 import 'package:unittest/mock.dart';
 import 'package:clean_data/clean_data.dart';
 
-int GROUP_CHANGED = 0;
-int GROUP_ADDED = 1;
-int GROUP_REMOVED = 2;
-List groupChanges(Mock mock, int size){
-  List result = [[],[],[]];
-  var event1 = mock.getLogs().logs.forEach((log){
-    var change = log.args.first['change'];
-    result[GROUP_CHANGED].addAll(change.changedItems.keys);
-    result[GROUP_ADDED].addAll(change.addedItems);
-    result[GROUP_REMOVED].addAll(change.removedItems);
-  });
-  return result;
-}
-
 void main() {
   group('(DataList)', () {
 
@@ -395,10 +381,10 @@ void main() {
           ['element1','element1.5', 'element2', 'element3']));
 
       mock.getLogs().verify(happenedExactly(1));
-      var changes = groupChanges(mock, 1);
-      expect(changes[GROUP_CHANGED], unorderedEquals([1,2,3]));
-      expect(changes[GROUP_ADDED], unorderedEquals([3]));
-      expect(changes[GROUP_REMOVED], unorderedEquals([]));
+      var change = mock.getLogs().logs.first.args.first['change'];
+      expect(change.changedItems.keys, unorderedEquals([1,2,3]));
+      expect(change.addedItems, unorderedEquals([3]));
+      expect(change.removedItems, unorderedEquals([]));
     });
 
     test('listen multiple elements inserted to middle. (T23)', () {
@@ -474,10 +460,10 @@ void main() {
           ['element1', 'element3', 'element4']));
 
       mock.getLogs().verify(happenedExactly(1));
-      var changes = groupChanges(mock, 1);
-      expect(changes[GROUP_CHANGED], unorderedEquals([1,2,3]));
-      expect(changes[GROUP_ADDED], unorderedEquals([]));
-      expect(changes[GROUP_REMOVED], unorderedEquals([3]));
+      var change = mock.getLogs().logs.first.args.first['change'];
+      expect(change.changedItems.keys, unorderedEquals([1,2,3]));
+      expect(change.addedItems, unorderedEquals([]));
+      expect(change.removedItems, unorderedEquals([3]));
     });
 
     test('listen remove multiple elements from middle. (T25)', () {
