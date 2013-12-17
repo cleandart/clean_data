@@ -23,7 +23,7 @@ class Change {
   /**
    * Applies another [change] to get representation of whole change.
    */
-  void mergeIn(change) {
+  void mergeIn(Change change) {
     newValue = change.newValue;
   }
 
@@ -104,7 +104,20 @@ class ChangeSet {
    */
   void markChanged(dynamic key, changeSet) {
     if(changedItems.containsKey(key)) {
-      changedItems[key].mergeIn(changeSet);
+      if(changeSet is Change) {
+        if(changedItems[key] is Change) {
+          changedItems[key].mergeIn(changeSet);
+        }
+        else { 
+          changedItems[key] = changeSet;
+        }
+      }
+      else {
+        if(changedItems[key] is Change) {}
+        else {
+          changedItems[key].mergeIn(changeSet);
+        }
+      }
     } else {
       changedItems[key] = changeSet.clone();
     }

@@ -423,7 +423,6 @@ void main() {
 
         // when
         dataObj['child']['name'] = 'John Doe';
-        dataObj['child'] = new Data();
 
         // then
         dataObj.onChange.listen(expectAsync1((ChangeSet event) {
@@ -431,15 +430,15 @@ void main() {
         }));
       });
       
-      solo_test('data can be replaced by another data.', () {
+      test('dataView can be overwritten.', () {
         // given
         var dataObj = new Data.from({'child': new Data()});
-
+        dataObj['child'] = new Data();
         // when
         dataObj['child']['name'] = 'John Doe';
-        dataObj['child'] = new Data();
 
         // then
+
       });
 
       test('do not listen to removed children changes.', () {
@@ -593,41 +592,36 @@ void main() {
         });
       });
     });
+    
     group('DataReference', () {
       test('change value of datareference with map interface.', () {
-        var data = new Data();
-        data['name'] = 'name';
+        var data = new Data.from({'name': 'name'});
         var ref = data.ref('name');
-        
-        var checkRef = expectAsync1((_) {
+          
+        ref.onChangeSync.listen(expectAsync1((_) {
           expect(ref.value, 'newName');
-        });
-        ref.onChangeSync.listen(checkRef);
+        }));
         
         data['name'] = 'newName'; 
         expect(data['name'], equals('newName'));
-        data['name'] = 'stylishName';
       });
-      
-      /*test('change value of datareference with map interface.', () {
-        var data = new Data();
-        data['name'] = 'name';
-        //data.add('name', 'name');
+         
+      test('change value of datareference with map interface.', () {
+        var data = new Data.from({'name': 'name'});
         var ref = data.ref('name');
         
-        var checkRef = expectAsync1((_) {
+        ref.onChange.listen(expectAsync1((_) {
           expect(ref.value, 'newName');
-        });
-        ref.onChangeSync.listen(checkRef);
+        }));
         
-        var checkDataChangeSet = expectAsync1((ChangeSet event) {
+        data.onChange.listen(expectAsync1((ChangeSet event) {
           expect(event.changedItems['name'].newValue, equals('newName'));
           expect(event.changedItems['name'].oldValue, equals('name'));
-        });
-        data.onChangeSync.listen(checkDataChangeSet);
+        }));
+        
         ref.value = 'newName';
         expect(data['name'], equals('newName'));
-      });*/
+      });
     });
- });
+  });
 }

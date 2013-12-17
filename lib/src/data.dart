@@ -139,7 +139,7 @@ class Data extends DataView with DataChangeListenersMixin<String> implements Map
    * Assigns the [value] to the [key] field.
    */
   void operator[]=(String key, value) {
-    if(_fields.containsKey(key) && _fields[key] is DataReference && 0) {
+    if(_fields.containsKey(key) && _fields[key] is DataReference) {
       _fields[key].value = value;
     }
     else {

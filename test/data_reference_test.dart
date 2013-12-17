@@ -29,34 +29,22 @@ void main() {
     test('Listen on change (T03)', () {
       DataReference ref = new DataReference('oldValue');
       
-      var check = expectAsync1((ChangeSet event) {
-        expect(event.changedItems.length, equals(1));
-        expect(event.changedItems.containsKey('value'), isTrue);
-        expect(event.changedItems['value'].oldValue , equals('oldValue'));
-        expect(event.changedItems['value'].newValue , equals('newValue'));
-
-        expect(event.addedItems.length, equals(0));
-        expect(event.removedItems.length, equals(0));
-      });
+      ref.onChange.listen(expectAsync1((Change event) {
+        expect(event.oldValue , equals('oldValue'));
+        expect(event.newValue , equals('newValue'));
+      }));
       
-      ref.onChange.listen(check);
       ref.value = 'newValue';
     });
     
     test('Listen on changeSync(T04)', () {
       DataReference ref = new DataReference('oldValue');
       
-      var check = expectAsync1((ChangeSet event) {
-        expect(event.changedItems.length, equals(1));
-        expect(event.changedItems.containsKey('value'), isTrue);
-        expect(event.changedItems['value'].oldValue , equals('oldValue'));
-        expect(event.changedItems['value'].newValue , equals('newValue'));
-        
-        expect(event.addedItems.length, equals(0));
-        expect(event.removedItems.length, equals(0));
-      });
+      ref.onChangeSync.listen(expectAsync1((event) {
+        expect(event['change'].oldValue , equals('oldValue'));
+        expect(event['change'].newValue , equals('newValue'));
+      }));
       
-      ref.onChange.listen(check);
       ref.value = 'newValue';
     });
   });
