@@ -214,13 +214,14 @@ abstract class DataCollectionView extends Object
 }
 
 abstract class DataChangeListenersMixin<T> {
-
   void _markChanged(T key, changeSet);
   void _notify({author});
+
   /**
    * Internal Set of data objects removed from Collection that still have DataListener listening.
    */
   Set<T> _removedObjects = new Set();
+
   /**
    * Internal set of listeners for change events on individual data objects.
    */

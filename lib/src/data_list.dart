@@ -14,7 +14,7 @@ part of clean_dart;
  */
 
 class DataList extends Object
-  with ListMixin, ChangeNotificationsMixin, DataChangeListenersMixin<int>
+  with ChangeNotificationsMixin, DataChangeListenersMixin<int>, ListMixin
     implements List {
 
   Iterator get iterator => _elements.iterator;
@@ -34,9 +34,9 @@ class DataList extends Object
   /**
    * Creates a new [DataList] object from [Iterable]
    */
-  factory DataList.from(Iterable other) {
+  factory DataList.from(Iterable other, {author: null}) {
     DataList result = new DataList();
-    other.forEach((element)=>result._elements.add(element));
+    result.addAll(other, author: author);
     result._clearChanges();
     //TODO should be also _clearChangesSync?
     return result;
@@ -65,7 +65,7 @@ class DataList extends Object
       _markChanged(key, new Change(null, element));
       _markAdded(key);
 
-      if(element is Data || element is DataList){
+      if(element is DataView || element is DataList){
         _addOnDataChangeListener(key, element);
       }
 
@@ -131,7 +131,7 @@ class DataList extends Object
     for(int i=toRemove.length-1; i>=0; i--){
       int key = toRemove[i];
 
-      if(_elements[key] is Data || _elements[key] is DataList){
+      if(_elements[key] is DataView || _elements[key] is DataList){
         _removeOnDataChangeListener(key);
       }
 
@@ -153,7 +153,7 @@ class DataList extends Object
 
       //TODO refactor this test to _addOnData...blah,blah
       if(added is DataView || added is DataList){
-        _addOnDataChangeListener(key, other[key-index]);
+        //_addOnDataChangeListener(key, other[key-index]);
       }
     };
     // Changed keys for _elements

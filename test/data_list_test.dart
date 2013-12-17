@@ -748,17 +748,19 @@ void main() {
       }));
     });
 
-    group('(Nested Data)', () { /*
+    group('(Nested Data)', () {
       test('listens to changes of its children.', () {
         // given
-        DataList dataList = new DataList.from([new Data()]);
+        DataList dataList = new DataList.from([new Data(), new Data()]);
 
         // when
         dataList[0]['name'] = 'John Doe';
+        dataList[1]['name'] = 'Mills';
 
         // then
         dataList.onChange.listen(expectAsync1((ChangeSet event) {
           expect(event.changedItems[0].addedItems, equals(['name']));
+          expect(event.changedItems[1].addedItems, equals(['name']));
         }));
       });
 
@@ -782,7 +784,7 @@ void main() {
           expect(event.changedItems[3].addedItems, equals(['name']));
         }));
       });
-
+/*
       test('do not listen to removed children changes.', () {
         // given
         var child = new Data();
