@@ -736,7 +736,7 @@ void main() {
       expect(index1, equals(1));
       expect(index2, equals(2));
     });
-/*
+
     /**
      * Removes all objects from this list that satisfy [test].
      */
@@ -788,7 +788,7 @@ void main() {
         expect(event.removedItems, unorderedEquals([2,3]));
       }));
     });
-
+/*
     /**
      * Sorts this list according to the order specified by the [compare] function.
      */
@@ -997,5 +997,32 @@ void main() {
       }));
     });
     */
+
+    test(' removeAll (T46)', () {
+      // given
+      DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4', 'element5']);
+
+      // when
+      dataList.removeAll([1,3]);
+
+      // then
+      expect(new List.from(dataList), unorderedEquals(
+          ['element1', 'element3', 'element5']));
+
+      dataList.onChange.listen(expectAsync1((ChangeSet event) {
+        expect(event.changedItems.keys, unorderedEquals([1,2]));
+
+        Change change1 = event.changedItems[1];
+        expect(change1.oldValue, equals('element2'));
+        expect(change1.newValue, equals('element3'));
+
+        Change change2 = event.changedItems[2];
+        expect(change2.oldValue, equals('element3'));
+        expect(change2.newValue, equals('element5'));
+
+        expect(event.addedItems, unorderedEquals([]));
+        expect(event.removedItems, unorderedEquals([3,4]));
+      }));
+    });
  });
 }

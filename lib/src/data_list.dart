@@ -101,16 +101,33 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
   /**
    * Removes all objects from this list that satisfy [test].
    */
-  //TODO iterable mixin?
   void removeWhere(bool test(dynamic element), {author: null}){
-    //TODO
+    List toRemove = [];
+    for(int i=0; i<_elements.length ; i++){
+        if(test(_elements[i])) toRemove.add(i);
+    };
+    removeAll(toRemove, author: author);
   }
 
   /**
    * Removes all objects from this list that fail to satisfy [test].
    */
   void retainWhere(bool test(dynamic element), {author: null}){
-    //TODO
+    List toRemove = [];
+    for(int i=0; i<_elements.length ; i++){
+        if(!test(_elements[i])) toRemove.add(i);
+    };
+    removeAll(toRemove, author: author);
+  }
+
+  void removeAll(Iterable indexes, {author: null}){
+    List toRemove = new List.from(indexes, growable: false);
+    toRemove.sort();
+
+    for(int i=toRemove.length-1; i>=0; i--){
+      int key = toRemove[i];
+      removeAt(key);
+    }
   }
 
   /**
