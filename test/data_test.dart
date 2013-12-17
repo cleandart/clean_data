@@ -468,33 +468,21 @@ void main() {
         });
       });
 
-      //TODO is this necessary?
-      test('listen on multiple children added.', () {
+      test('listen on multiple children changed.', () {
         // given
-        var data = {'child1': new Data(), 'child2': new Data(), 'child3': new Data()};
-        var dataObj = new Data();
+        var dataObj = new Data.from({'child1': new Data(), 'child2': new Data(), 'child3': new Data()});
         var mock = new Mock();
-        dataObj.onChangeSync.listen((event) => mock.handler(event));
 
         // when
-        dataObj.addAll(data, author: 'John Doe');
-
-        // then sync onChange propagates information about all changes and
-        // adds
-        mock.getLogs().verify(happenedOnce);
-        var event = mock.getLogs().first.args.first;
-        expect(event['author'], equals('John Doe'));
-
-        var changeSet = event['change'];
-        expect(changeSet.removedItems.isEmpty, isTrue);
-        expect(changeSet.addedItems, unorderedEquals(data.keys));
-        expect(changeSet.changedItems.length, equals(3));
+        dataObj['child1']['name'] = 'John Doe';
+        dataObj['child2']['name'] = 'Mills';
+        dataObj['child3']['name'] = 'Somerset';
 
         // but async onChange drops information about changes in added items.
-        dataObj.onChange.listen(expectAsync1((changeSet) {
-          expect(changeSet.addedItems, unorderedEquals(data.keys));
-          expect(changeSet.removedItems.isEmpty, isTrue);
-          expect(changeSet.changedItems.isEmpty, isTrue);
+        dataObj.onChange.listen(expectAsync1((ChangeSet event) {
+          expect(event.changedItems['child1'].addedItems, equals(['name']));
+          expect(event.changedItems['child2'].addedItems, equals(['name']));
+          expect(event.changedItems['child3'].addedItems, equals(['name']));
         }));
       });
 
