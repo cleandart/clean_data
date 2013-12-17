@@ -701,21 +701,78 @@ void main() {
      * to the given [fillValue].
      */
     test(' implements List.fillRange(). (T39)', () {
-      //TODO
+      // given
+      DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
+
+      // when
+      dataList.fillRange(1, 3, 'kitty');
+
+      // then
+      dataList.onChange.listen(expectAsync1((ChangeSet event) {
+        expect(event.changedItems.keys, unorderedEquals([1,2]));
+
+        Change change1 = event.changedItems[0];
+        expect(change1.oldValue, equals('element2'));
+        expect(change1.newValue, equals('kitty'));
+
+        Change change2 = event.changedItems[1];
+        expect(change2.oldValue, equals('element3'));
+        expect(change2.newValue, equals('kitty'));
+
+        expect(event.addedItems, unorderedEquals([]));
+        expect(event.removedItems, unorderedEquals([]));
+      }));
     });
 
     /**
      * Shuffles the elements of this list randomly.
      */
     test(' implements List.shuffle(). (T40)', () {
-      //TODO
+      // given
+      DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
+
+      // when
+      dataList.shuffle();
+
+      // then
+      dataList.onChange.listen(expectAsync1((ChangeSet event) {
+        //TODO changed items
+
+        expect(event.addedItems, unorderedEquals([]));
+        expect(event.removedItems, unorderedEquals([]));
+      }));
     });
 
     /**
      * Inserts all objects of [iterable] at position [index] in this list.
      */
     test(' implements List.insertAll(). (T41)', () {
-      //TODO
+      // given
+      DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
+
+      // when
+      dataList.insertAll(1, ['kitty', 'doge']);
+
+      // then
+      dataList.onChange.listen(expectAsync1((ChangeSet event) {
+        expect(event.changedItems.keys, unorderedEquals([1,2,3]));
+
+        Change change1 = event.changedItems[0];
+        expect(change1.oldValue, equals('element2'));
+        expect(change1.newValue, equals('kitty'));
+
+        Change change2 = event.changedItems[1];
+        expect(change2.oldValue, equals('element3'));
+        expect(change2.newValue, equals('doge'));
+
+        Change change3 = event.changedItems[3];
+        expect(change3.oldValue, equals('element4'));
+        expect(change3.newValue, equals('element2'));
+
+
+        expect(event.addedItems, unorderedEquals([4,5]));
+        expect(event.removedItems, unorderedEquals([]));
+      }));
     });
 
     /**
@@ -726,21 +783,48 @@ void main() {
      * in numerical order.
      */
     test(' implements List.asMap(). (T42)', () {
-      //TODO
+      //TODO should be as clean_data.Data ?
     });
 
     /**
      * Pops and returns the last object in this list.
      */
     test(' implements List.removeLast(). (T43)', () {
-      //TODO
+      // given
+      DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
+
+      // when
+      dataList.removeLast();
+
+      // then
+      dataList.onChange.listen(expectAsync1((ChangeSet event) {
+        expect(event.changedItems.keys, unorderedEquals([]));
+        expect(event.addedItems, unorderedEquals([]));
+        expect(event.removedItems, unorderedEquals([3]));
+      }));
     });
 
     /**
      * Removes the objects in the range [start] inclusive to [end] exclusive.
      */
     test(' implements List.removeRange(). (T44)', () {
-      //TODO
+      // given
+      DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
+
+      // when
+      dataList.removeRange(1,3);
+
+      // then
+      dataList.onChange.listen(expectAsync1((ChangeSet event) {
+        expect(event.changedItems.keys, unorderedEquals([1]));
+
+        Change change1 = event.changedItems[0];
+        expect(change1.oldValue, equals('element2'));
+        expect(change1.newValue, equals('element4'));
+
+        expect(event.addedItems, unorderedEquals([]));
+        expect(event.removedItems, unorderedEquals([2,3]));
+      }));
     });
 
     /**
@@ -748,7 +832,27 @@ void main() {
      * into the range [start] inclusive to [end] exclusive of `this`.
      */
     test(' implements List.setRange(). (T45)', () {
-      //TODO
+      // given
+      DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
+
+      // when
+      dataList.setRange(1,3, ['kid', 'kitty', 'doge'], 1);
+
+      // then
+      dataList.onChange.listen(expectAsync1((ChangeSet event) {
+        expect(event.changedItems.keys, unorderedEquals([1,2]));
+
+        Change change1 = event.changedItems[0];
+        expect(change1.oldValue, equals('element2'));
+        expect(change1.newValue, equals('kitty'));
+
+        Change change2 = event.changedItems[1];
+        expect(change2.oldValue, equals('element3'));
+        expect(change2.newValue, equals('doge'));
+
+        expect(event.addedItems, unorderedEquals([]));
+        expect(event.removedItems, unorderedEquals([]));
+      }));
     });
  });
 }
