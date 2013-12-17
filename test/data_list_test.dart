@@ -573,21 +573,6 @@ void main() {
     });
 
     /**
-     * Returns an [Iterable] of the objects in this list in reverse order.
-     */
-    test(' implements List.reversed(). (T28)', () {
-      // given
-      DataList dataList = new DataList.from(['element1','element2', 'element3']);
-      var mock = new Mock();
-
-      // when
-      List reversed = new List.from(dataList.reversed);
-
-      // then
-      expect(reversed, equals(['element3','element2', 'element1']));
-    });
-
-    /**
      * Removes the objects in the range [start] inclusive to [end] exclusive
      * and replaces them with the contents of the [iterable].
      */
@@ -616,22 +601,6 @@ void main() {
         expect(event.addedItems, unorderedEquals([]));
         expect(event.removedItems, unorderedEquals([]));
       }));
-    });
-
-
-    /**
-     * Returns an [Iterable] that iterates over the objects in the range
-     * [start] inclusive to [end] exclusive.
-     */
-    test(' implements List.getRange(). (T30)', () {
-      // given
-      DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
-
-      // when
-      Iterable range = dataList.getRange(1, 3);
-
-      // then
-      expect(new List.from(range), equals(['element2', 'element3']));
     });
 
     /**
@@ -675,55 +644,6 @@ void main() {
 
       // then
       expect(()=>dataList.setAll(1, ['new2', 'new3']), throwsArgumentError);
-    });
-
-    /**
-     * Returns the last index of [element] in this list.
-     */
-    test(' implements List.lastIndexOf(). (T32)', () {
-      // given
-      DataList dataList = new DataList.from(['element','element', 'kitty']);
-
-      // when
-      var index1 = dataList.lastIndexOf('element');
-      var index0 = dataList.lastIndexOf('element', 0);
-
-      // then
-      expect(index1, equals(1));
-      expect(index0, equals(0));
-    });
-
-    /**
-     * Returns a new list containing the objects from [start] inclusive to [end]
-     * exclusive.
-     */
-    test(' implements List.sublist(). (T33)', () {
-      // given
-      DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
-
-      // when
-      var range13 = dataList.sublist(1, 3);
-      var range1e= dataList.sublist(1);
-
-      // then
-      expect(new List.from(range13), equals(['element2', 'element3']));
-      expect(new List.from(range1e), equals(['element2', 'element3', 'element4']));
-    });
-
-    /**
-     * Returns the first index of [element] in this list.
-     */
-    test(' implements List.indexOf(). (T35)', () {
-      // given
-      DataList dataList = new DataList.from(['kitty','element', 'element']);
-
-      // when
-      var index1 = dataList.indexOf('element');
-      var index2 = dataList.indexOf('element', 2);
-
-      // then
-      expect(index1, equals(1));
-      expect(index2, equals(2));
     });
 
     /**
@@ -897,20 +817,6 @@ void main() {
       }));
     });
 
-    /**
-     * Returns an unmodifiable [Map] view of `this`.
-    *
-     * The map uses the indices of this list as keys and the corresponding objects
-     * as values. The `Map.keys` [Iterable] iterates the indices of this list
-     * in numerical order.
-     */
-    test(' implements List.asMap(). (T42)', () {
-      //TODO should be as clean_data.Data ?
-    });
-
-    /**
-     * Pops and returns the last object in this list.
-     */
     test(' implements List.removeLast(). (T43)', () {
       // given
       DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
@@ -929,9 +835,6 @@ void main() {
       }));
     });
 
-    /**
-     * Removes the objects in the range [start] inclusive to [end] exclusive.
-     */
     test(' implements List.removeRange(). (T44)', () {
       // given
       DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
@@ -955,10 +858,6 @@ void main() {
       }));
     });
 
-    /**
-     * Copies the objects of [iterable], skipping [skipCount] objects first,
-     * into the range [start] inclusive to [end] exclusive of `this`.
-     */
     test(' implements List.setRange(). (T45)', () {
       // given
       DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
@@ -1010,29 +909,6 @@ void main() {
 
         expect(event.addedItems, unorderedEquals([]));
         expect(event.removedItems, unorderedEquals([3,4]));
-      }));
-    });
-
-    /**
-     * Returns an unmodifiable [DataView] view of `this`.
-    *
-     * The map uses the indices of this list as keys and the corresponding objects
-     * as values. The `Map.keys` [Iterable] iterates the indices of this list
-     * in numerical order.
-     */
-    test(' implements List.asMap(). (T47)', () {
-      // given
-      DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
-
-      // when
-      Map map = dataList.asMap();
-
-      // then
-      expect(map, equals({
-        0: 'element1',
-        1: 'element2',
-        2: 'element3',
-        3: 'element4',
       }));
     });
  });

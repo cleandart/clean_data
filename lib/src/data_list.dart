@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 //TODO nested Data objects
 //TODO consider functions as subList, getRange, etc. to return DataList
+//TODO expand(Iterable) ?
 
 part of clean_dart;
 
@@ -10,7 +11,7 @@ part of clean_dart;
  * List with change notifications. Change set contains indexes which were changed.
  */
 
-class DataList extends Object with IterableMixin, ChangeNotificationsMixin implements List {
+class DataList extends Object with ListMixin, ChangeNotificationsMixin implements List {
 
   Iterator get iterator => _elements.iterator;
 
@@ -24,13 +25,6 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
       throw new ArgumentError("Incorrect range [$start, $end) for DataList of size ${_elements.length}");
     }
     return true;
-  }
-
-  /**
-   * Returns an [Iterable] of the objects in this list in reverse order.
-   */
-  Iterable get reversed{
-    return _elements.reversed;
   }
 
   /**
@@ -56,14 +50,6 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
   }
 
   /**
-   * Returns an [Iterable] that iterates over the objects in the range
-   * [start] inclusive to [end] exclusive.
-   */
-  Iterable getRange(int start, int end){
-    return _elements.getRange(start, end);
-  }
-
-  /**
    * Overwrites objects of `this` with the objects of [iterable], starting
    * at position [index] in this list.
    */
@@ -72,32 +58,12 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
   }
 
   /**
-   * Returns the last index of [element] in this list.
-   */
-  int lastIndexOf(dynamic element, [int start]){
-    return _elements.lastIndexOf(element, start);
-  }
-
-  /**
-   * Returns a new list containing the objects from [start] inclusive to [end]
-   * exclusive.
-   */
-  List sublist(int start, [int end]){
-    return _elements.sublist(start, end);
-  }
-
-  /**
    * Removes the object at position [index] from this list.
    */
   dynamic removeAt(int index, {author: null}){
+    dynamic result = _elements[index];
     removeRange(index, index+1, author: author);
-  }
-
-  /**
-   * Returns the first index of [element] in this list.
-   */
-  int indexOf(dynamic element, [int start = 0]){
-    return _elements.indexOf(element, start);
+    return result;
   }
 
   /**
@@ -212,21 +178,10 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
   }
 
   /**
-   * Returns an unmodifiable [Map] view of `this`.
-  *
-   * The map uses the indices of this list as keys and the corresponding objects
-   * as values. The `Map.keys` [Iterable] iterates the indices of this list
-   * in numerical order.
-   */
-  Map<int, dynamic> asMap(){
-    return _elements.asMap();
-  }
-
-  /**
    * Pops and returns the last object in this list.
    */
   dynamic removeLast({author: null}){
-    removeRange(_elements.length-1, _elements.length);
+    return removeAt(_elements.length-1);
   }
 
   /**
