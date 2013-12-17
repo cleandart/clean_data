@@ -4,6 +4,7 @@
 
 library data_list_test;
 
+import 'dart:async';
 import 'package:unittest/unittest.dart';
 import 'package:unittest/mock.dart';
 import 'package:clean_data/clean_data.dart';
@@ -711,6 +712,175 @@ void main() {
         expect(event.addedItems, unorderedEquals([]));
         expect(event.removedItems, unorderedEquals([3,4]));
       }));
+    });
+
+
+    group('(Nested)', () {
+      test('listens to changes of its children.', () {
+        // given
+        DataList dataList = new DataList.from([new Data()]);
+
+        // when
+        dataList[0]['name'] = 'John Doe';
+
+        // then
+        dataList.onChange.listen(expectAsync1((ChangeSet event) {
+          expect(event.changedItems[0].addedItems, equals(['name']));
+        }));
+      });
+
+      test('do not listen to removed children changes.', () {
+        // given
+        var child = new Data();
+        DataList dataList = new DataList.from([child]);
+        var onChange = new Mock();
+
+        // when
+        dataList.removeAt(0);
+        var future = new Future.delayed(new Duration(milliseconds: 20), () {
+          dataList.onChangeSync.listen((e) => onChange(e));
+          child['name'] = 'John Doe';
+        });
+
+        // then
+        future.then((_) {
+          onChange.getLogs().verify(neverHappened);
+        });
+      });
+
+      test('do not listen to changed children changes.', () {
+        // given
+        var childOld = new Data();
+        var childNew = new Data();
+        DataList dataList = new DataList.from([childOld]);
+        var onChange = new Mock();
+
+        // when
+        dataList[0] = childNew;
+        var future = new Future.delayed(new Duration(milliseconds: 20), () {
+          dataList.onChangeSync.listen((e) => onChange(e));
+          childOld['name'] = 'John Doe';
+        });
+
+        // then
+        future.then((_) {
+          onChange.getLogs().verify(neverHappened);
+        });
+      });
+
+      //TODO is this necessary?
+      test('listen on multiple children added.', () {
+        // given
+        var data = [new Data(), new Data(), new Data()];
+        DataList dataList = new DataList();
+        var mock = new Mock();
+        dataList.onChangeSync.listen((event) => mock.handler(event));
+
+        // when
+        dataList.addAll(data, author: 'John Doe');
+
+        // then sync onChange propagates information about all changes and
+        // adds
+        mock.getLogs().verify(happenedOnce);
+        var event = mock.getLogs().first.args.first;
+        expect(event['author'], equals('John Doe'));
+
+        var changeSet = event['change'];
+        expect(changeSet.removedItems.isEmpty, isTrue);
+        expect(changeSet.addedItems, unorderedEquals([0,1,2]));
+        expect(changeSet.changedItems.length, equals(3));
+
+        // but async onChange drops information about changes in added items.
+        dataList.onChange.listen(expectAsync1((changeSet) {
+          expect(changeSet.addedItems, unorderedEquals([0,1,2]));
+          expect(changeSet.removedItems.isEmpty, isTrue);
+          expect(changeSet.changedItems.isEmpty, isTrue);
+        }));
+      });
+
+      //TODO is this necessary?
+      test('remove multiple children.', () {
+        // given
+        DataList dataList = new DataList.from([new Data(), new Data(), new Data()]);
+        List keysToRemove = [0, 1];
+        var mock = new Mock();
+        dataList.onChangeSync.listen((event) => mock.handler(event));
+
+        // when
+        dataList.removeAll(keysToRemove, author: 'John Doe');
+
+        // then
+        mock.getLogs().verify(happenedOnce);
+        var event = mock.getLogs().first.args[0];
+        expect(event['author'], equals('John Doe'));
+        var changeSet = event['change'];
+        expect(changeSet.removedItems, unorderedEquals(keysToRemove));
+
+        // but async onChange drops information about changes in removed items.
+        dataList.onChange.listen(expectAsync1((changeSet) {
+          expect(changeSet.removedItems, unorderedEquals(keysToRemove));
+          expect(changeSet.addedItems.isEmpty, isTrue);
+          expect(changeSet.changedItems.isEmpty, isTrue);
+        }));
+      });
+
+      test('when property is added then removed, no changes are broadcasted. (T18)', () {
+        // given
+        DataList dataList = new DataList();
+        var child = new Data();
+
+        // when
+        dataList[0] = child;
+        dataList.removeAt(0);
+
+        // then
+        dataList.onChange.listen(protectAsync1((e) => expect(true, isFalse)));
+      });
+
+      test('when child Data is removed then added, this is a change.', () {
+        // given
+        var childOld = new Data();
+        var childNew = new Data();
+        DataList dataList = new DataList.from([new Data()]);
+        var onChange = new Mock();
+
+        // when
+        dataList.removeAt(0);
+        dataList.insert(0, childNew);
+
+        // then
+        dataList.onChange.listen(expectAsync1((ChangeSet event) {
+          expect(event.changedItems.keys, unorderedEquals([0]));
+
+          Change change = event.changedItems[0];
+          expect(change.oldValue, equals(childOld));
+          expect(change.newValue, equals(childNew));
+
+          expect(event.addedItems, unorderedEquals([]));
+          expect(event.removedItems, unorderedEquals([]));
+        }));
+      });
+
+      test('when child Data is removed then added, only one subscription remains.', () {
+        // given
+        var child = new Data();
+        DataList dataList = new DataList.from([new Data()]);
+        var onChange = new Mock();
+
+        // when
+        dataList.removeAt(0);
+        dataList.add(child);
+
+        var future = new Future.delayed(new Duration(milliseconds: 20), () {
+          dataList.onChangeSync.listen((e) => onChange(e));
+          child['key'] = 'value';
+        });
+
+        // then
+        future.then((_) {
+          onChange.getLogs().verify(happenedOnce);
+        });
+      });
     });
  });
 }

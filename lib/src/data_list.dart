@@ -71,7 +71,7 @@ class DataList extends Object with ListMixin, ChangeNotificationsMixin implement
    * Removes element with [index] from the data object.
    */
   bool remove(int index, {author: null}) {
-    removeRange(index, index+1, author: author);
+    return removeAt(index, author:author);
   }
 
   void clear({author: null}) {
