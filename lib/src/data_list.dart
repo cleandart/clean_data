@@ -124,14 +124,33 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
    * Inserts all objects of [iterable] at position [index] in this list.
    */
   void insertAll(int index, Iterable iterable, {author: null}){
-    //TODO
+    List other = (iterable is List) ? iterable : new List.from(iterable, growable: false);
+
+    // The list will be shifted right after the addition.
+    // Changed keys for iterable [index, index + iterable.length)
+    for(int key=index ; key<index+iterable.length ; key++){
+      _markChanged(key, new Change(_elements[key], other[key-index]));
+    };
+    // Changed keys for _elements
+    for(int key=index + iterable.length ; key<_elements.length ; key++){
+      _markChanged(key, new Change(_elements[key], _elements[key - iterable.length]));
+    };
+    // Added keys [_elements.length, _elements.length + iterable.length).
+    for(int key=_elements.length ; key<_elements.length + iterable.length ; key++){
+      _markChanged(key, new Change(null, key - iterable.length));
+      _markAdded(key);
+    };
+
+    _elements.insertAll(index, iterable);
+
+    _notify(author: author);
   }
 
   /**
    * Inserts the object at position [index] in this list.
    */
   void insert(int index, dynamic element, {author: null}){
-    //TODO
+    insertAll(index, [element], author: author);
   }
 
   /**
@@ -149,7 +168,7 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
    * Pops and returns the last object in this list.
    */
   dynamic removeLast({author: null}){
-    //TODO
+    removeRange(_elements.length-1, _elements.length);
   }
 
   /**
@@ -168,7 +187,7 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
     for(int key=start ; key<change_end_i ; key++){
       _markChanged(key, new Change(_elements[key], _elements[end + key - start]));
     };
-    // Removed Keys [change_end_i, _elements.length).
+    // Removed keys [change_end_i, _elements.length).
     for(int key=change_end_i ; key<_elements.length ; key++){
       _markChanged(key, new Change(_elements[key], null));
       _markRemoved(key);

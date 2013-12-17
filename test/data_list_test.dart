@@ -391,7 +391,7 @@ void main() {
       // then
       dataList.onChange.listen(protectAsync1((e) => expect(true, isFalse)));
     });
-/*
+
     test('listen elements inserted to middle. (T22)', () {
       // given
       DataList dataList = new DataList.from(['element1','element2', 'element3']);
@@ -402,9 +402,9 @@ void main() {
       dataList.insert(1, 'element1.5');
 
       // then
-      mock.getLogs().verify(happenedExactly(3));
-      var changes = groupChanges(mock, 3);
-      expect(changes[GROUP_CHANGED], unorderedEquals([1,2]));
+      mock.getLogs().verify(happenedExactly(1));
+      var changes = groupChanges(mock, 1);
+      expect(changes[GROUP_CHANGED], unorderedEquals([1,2,3]));
       expect(changes[GROUP_ADDED], unorderedEquals([3]));
       expect(changes[GROUP_REMOVED], unorderedEquals([]));
     });
@@ -421,13 +421,41 @@ void main() {
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.changedItems.keys, unorderedEquals([1,2]));
 
-        Change change1 = event.changedItems[0];
+        Change change1 = event.changedItems[1];
         expect(change1.oldValue, equals('element2'));
         expect(change1.newValue, equals('element1.25'));
 
-        Change change2 = event.changedItems[1];
+        Change change2 = event.changedItems[2];
         expect(change2.oldValue, equals('element3'));
         expect(change2.newValue, equals('element1.5'));
+
+        expect(event.addedItems, unorderedEquals([3,4]));
+        expect(event.removedItems, unorderedEquals([]));
+      }));
+    });
+
+    test('listen multiple elements inserted to beginning. (T23.5)', () {
+      // given
+      DataList dataList = new DataList.from(['element1','element2', 'element3']);
+
+      // when
+      dataList.insertAll(0, ['element0.25', 'element0.5']);
+
+      // then
+      dataList.onChange.listen(expectAsync1((ChangeSet event) {
+        expect(event.changedItems.keys, unorderedEquals([0,1,2]));
+
+        Change change1 = event.changedItems[0];
+        expect(change1.oldValue, equals('element1'));
+        expect(change1.newValue, equals('element0.25'));
+
+        Change change2 = event.changedItems[1];
+        expect(change2.oldValue, equals('element2'));
+        expect(change2.newValue, equals('element0.5'));
+
+        Change change3 = event.changedItems[2];
+        expect(change3.oldValue, equals('element3'));
+        expect(change3.newValue, equals('element1'));
 
         expect(event.addedItems, unorderedEquals([3,4]));
         expect(event.removedItems, unorderedEquals([]));
@@ -444,9 +472,9 @@ void main() {
       dataList.removeAt(1);
 
       // then
-      mock.getLogs().verify(happenedExactly(3));
-      var changes = groupChanges(mock, 3);
-      expect(changes[GROUP_CHANGED], unorderedEquals([1,2]));
+      mock.getLogs().verify(happenedExactly(1));
+      var changes = groupChanges(mock, 1);
+      expect(changes[GROUP_CHANGED], unorderedEquals([1,2,3]));
       expect(changes[GROUP_ADDED], unorderedEquals([]));
       expect(changes[GROUP_REMOVED], unorderedEquals([3]));
     });
@@ -463,16 +491,40 @@ void main() {
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.changedItems.keys, unorderedEquals([1,2]));
 
-        Change change1 = event.changedItems[0];
+        Change change1 = event.changedItems[1];
         expect(change1.oldValue, equals('element2'));
         expect(change1.newValue, equals('element4'));
 
-        Change change2 = event.changedItems[1];
+        Change change2 = event.changedItems[2];
         expect(change2.oldValue, equals('element3'));
         expect(change2.newValue, equals('element5'));
 
         expect(event.addedItems, unorderedEquals([]));
         expect(event.removedItems, unorderedEquals([3,4]));
+      }));
+    });
+
+    test('listen remove multiple elements from beginning. (T25.5)', () {
+      // given
+      DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4', 'element5']);
+
+      // when
+      dataList.removeRange(0,3);
+
+      // then
+      dataList.onChange.listen(expectAsync1((ChangeSet event) {
+        expect(event.changedItems.keys, unorderedEquals([0,1]));
+
+        Change change1 = event.changedItems[0];
+        expect(change1.oldValue, equals('element1'));
+        expect(change1.newValue, equals('element4'));
+
+        Change change2 = event.changedItems[1];
+        expect(change2.oldValue, equals('element2'));
+        expect(change2.newValue, equals('element5'));
+
+        expect(event.addedItems, unorderedEquals([]));
+        expect(event.removedItems, unorderedEquals([2,3,4]));
       }));
     });
 
@@ -492,6 +544,7 @@ void main() {
       }));
     });
 
+    /*
     test(' implements List.clear(). (T27)', () {
       // given
       DataList dataList = new DataList.from(['element1','element2', 'element3']);
@@ -537,11 +590,11 @@ void main() {
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.changedItems.keys, unorderedEquals([1,2]));
 
-        Change change1 = event.changedItems[0];
+        Change change1 = event.changedItems[1];
         expect(change1.oldValue, equals('element2'));
         expect(change1.newValue, equals('new2'));
 
-        Change change2 = event.changedItems[1];
+        Change change2 = event.changedItems[2];
         expect(change2.oldValue, equals('element3'));
         expect(change2.newValue, equals('new3'));
 
@@ -580,11 +633,11 @@ void main() {
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.changedItems.keys, unorderedEquals([1,2]));
 
-        Change change1 = event.changedItems[0];
+        Change change1 = event.changedItems[1];
         expect(change1.oldValue, equals('element2'));
         expect(change1.newValue, equals('new2'));
 
-        Change change2 = event.changedItems[1];
+        Change change2 = event.changedItems[2];
         expect(change2.oldValue, equals('element3'));
         expect(change2.newValue, equals('new3'));
 
@@ -650,7 +703,7 @@ void main() {
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.changedItems.keys, unorderedEquals([1]));
 
-        Change change1 = event.changedItems[0];
+        Change change1 = event.changedItems[1];
         expect(change1.oldValue, equals('doge'));
         expect(change1.newValue, equals('element4'));
 
@@ -673,7 +726,7 @@ void main() {
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.changedItems.keys, unorderedEquals([1]));
 
-        Change change1 = event.changedItems[0];
+        Change change1 = event.changedItems[1];
         expect(change1.oldValue, equals('element2'));
         expect(change1.newValue, equals('kitty'));
 
@@ -704,7 +757,7 @@ void main() {
         expect(change2.oldValue, equals('element4'));
         expect(change2.newValue, equals('element2'));
 
-        Change change3 = event.changedItems[2];
+        Change change3 = event.changedItems[3];
         expect(change3.oldValue, equals('element1'));
         expect(change3.newValue, equals('element4'));
 
@@ -728,11 +781,11 @@ void main() {
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.changedItems.keys, unorderedEquals([1,2]));
 
-        Change change1 = event.changedItems[0];
+        Change change1 = event.changedItems[1];
         expect(change1.oldValue, equals('element2'));
         expect(change1.newValue, equals('kitty'));
 
-        Change change2 = event.changedItems[1];
+        Change change2 = event.changedItems[2];
         expect(change2.oldValue, equals('element3'));
         expect(change2.newValue, equals('kitty'));
 
@@ -774,11 +827,11 @@ void main() {
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.changedItems.keys, unorderedEquals([1,2,3]));
 
-        Change change1 = event.changedItems[0];
+        Change change1 = event.changedItems[1];
         expect(change1.oldValue, equals('element2'));
         expect(change1.newValue, equals('kitty'));
 
-        Change change2 = event.changedItems[1];
+        Change change2 = event.changedItems[2];
         expect(change2.oldValue, equals('element3'));
         expect(change2.newValue, equals('doge'));
 
@@ -835,7 +888,7 @@ void main() {
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.changedItems.keys, unorderedEquals([1]));
 
-        Change change1 = event.changedItems[0];
+        Change change1 = event.changedItems[1];
         expect(change1.oldValue, equals('element2'));
         expect(change1.newValue, equals('element4'));
 
@@ -859,11 +912,11 @@ void main() {
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.changedItems.keys, unorderedEquals([1,2]));
 
-        Change change1 = event.changedItems[0];
+        Change change1 = event.changedItems[1];
         expect(change1.oldValue, equals('element2'));
         expect(change1.newValue, equals('kitty'));
 
-        Change change2 = event.changedItems[1];
+        Change change2 = event.changedItems[2];
         expect(change2.oldValue, equals('element3'));
         expect(change2.newValue, equals('doge'));
 
