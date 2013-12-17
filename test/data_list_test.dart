@@ -390,26 +390,50 @@ void main() {
 
     test('listen multiple elements inserted to middle. (T23)', () {
       // given
-      DataList dataList = new DataList.from(['element1','element2', 'element3']);
+      DataList dataList = new DataList.from(['element1','element2']);
+      var mock = new Mock();
+      dataList.onChangeSync.listen((event) => mock.handler(event));
 
       // when
-      dataList.insert(1, 'element1.5');
-      dataList.insert(1, 'element1.25');
+      dataList.insertAll(1, ['element1.1', 'element1.2', 'element1.5']);
 
       // then
       expect(new List.from(dataList), unorderedEquals(
-          ['element1','element1.25', 'element1.5', 'element2', 'element3']));
+          ['element1', 'element1.1', 'element1.25', 'element1.5', 'element2']));
+
+      mock.getLogs().verify(happenedExactly(3));
+      var change = mock.getLogs().logs.first.args.first['change'];
+      expect(change.changedItems.keys, unorderedEquals([1,2,3,4]));
+
+      Change change1 = change.changedItems[1];
+      expect(change1.oldValue, equals('element2'));
+      expect(change1.newValue, equals('element1.1'));
+
+      Change change2 = change.changedItems[2];
+      expect(change2.oldValue, equals('element3'));
+      expect(change2.newValue, equals('element1.25'));
+
+      Change change3 = change.changedItems[3];
+      expect(change3.oldValue, equals(null));
+      expect(change3.newValue, equals('element1.5'));
+
+      Change change4 = change.changedItems[4];
+      expect(change4.oldValue, equals(null));
+      expect(change4.newValue, equals('element2'));
+
+      expect(change.addedItems, unorderedEquals([3,4]));
+      expect(change.removedItems, unorderedEquals([]));
 
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.changedItems.keys, unorderedEquals([1,2]));
 
         Change change1 = event.changedItems[1];
         expect(change1.oldValue, equals('element2'));
-        expect(change1.newValue, equals('element1.25'));
+        expect(change1.newValue, equals('element1.1'));
 
         Change change2 = event.changedItems[2];
         expect(change2.oldValue, equals('element3'));
-        expect(change2.newValue, equals('element1.5'));
+        expect(change2.newValue, equals('element1.25'));
 
         expect(event.addedItems, unorderedEquals([3,4]));
         expect(event.removedItems, unorderedEquals([]));
@@ -418,17 +442,17 @@ void main() {
 
     test('listen multiple elements inserted to beginning. (T23.5)', () {
       // given
-      DataList dataList = new DataList.from(['element1', 'element2', 'element3']);
+      DataList dataList = new DataList.from(['element1', 'element2']);
 
       // when
       dataList.insertAll(0, ['element0.25', 'element0.5']);
 
       // then
       expect(new List.from(dataList), unorderedEquals(
-          ['element0.25', 'element0.5', 'element1', 'element2', 'element3']));
+          ['element0.25', 'element0.5', 'element1', 'element2']));
 
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
-        expect(event.changedItems.keys, unorderedEquals([0,1,2]));
+        expect(event.changedItems.keys, unorderedEquals([0,1]));
 
         Change change1 = event.changedItems[0];
         expect(change1.oldValue, equals('element1'));
@@ -438,11 +462,7 @@ void main() {
         expect(change2.oldValue, equals('element2'));
         expect(change2.newValue, equals('element0.5'));
 
-        Change change3 = event.changedItems[2];
-        expect(change3.oldValue, equals('element3'));
-        expect(change3.newValue, equals('element1'));
-
-        expect(event.addedItems, unorderedEquals([3,4]));
+        expect(event.addedItems, unorderedEquals([2, 3]));
         expect(event.removedItems, unorderedEquals([]));
       }));
     });
@@ -714,7 +734,7 @@ void main() {
       }));
     });
 
-
+/*
     group('(Nested)', () {
       test('listens to changes of its children.', () {
         // given
@@ -882,5 +902,6 @@ void main() {
         });
       });
     });
+    */
  });
 }
