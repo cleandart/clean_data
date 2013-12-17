@@ -166,7 +166,6 @@ void main() {
     });
 
     test('listen on index removed. (T11)', () {
-      print("Test 11");
       // given
       DataList dataList = new DataList.from(['element1']);
 
@@ -182,7 +181,6 @@ void main() {
     });
 
     test('listen synchronously on index removed. (T12)', () {
-      print("Test 12");
       // given
       DataList dataList = new DataList.from(['element1']);
       var mock = new Mock();
@@ -201,7 +199,6 @@ void main() {
     });
 
     test('listen on {index, element} changed. (T13)', () {
-      print("Test 13");
       // given
       DataList dataList = new DataList.from(['oldElement']);
 
@@ -220,7 +217,6 @@ void main() {
     });
 
     test('propagate multiple changes in single [ChangeSet]. (T14)', () {
-      print("Test 14");
       // given
       DataList dataList = new DataList.from(['element1', 'element2']);
 
@@ -237,7 +233,6 @@ void main() {
     });
 
     test('propagate multiple changes in single [ChangeSet]. (T14.5)', () {
-      print("Test 14.5");
       // given
       DataList dataList = new DataList.from(['element1', 'element2']);
 
@@ -254,7 +249,6 @@ void main() {
     });
 
     test('listen on multiple elements added. (T15)', () {
-      print("Test 15");
       // given
       List list = ['element1', 'element2', 'element3'];
       DataList dataList = new DataList();
@@ -286,8 +280,6 @@ void main() {
     });
 
     test('listen sync & async on multiple indexes removed. (T16)', () {
-      print("Test 16");
-
       // given
       DataList dataList = new DataList.from(['element1', 'element2', 'element3']);
       var mock = new Mock();
@@ -312,7 +304,6 @@ void main() {
     });
 
     test('when element is added then changed, only addition is in the [ChangeSet]. (T17)', () {
-      print("Test 17");
       // given
       DataList dataList = new DataList();
 
@@ -330,8 +321,6 @@ void main() {
 
 
     test('when existing {index, element} is removed then re-added, this is a change. (T18', () {
-      print("Test 18");
-
       // given
       DataList dataList = new DataList.from(['oldElement']);
 
