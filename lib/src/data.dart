@@ -223,7 +223,7 @@ class Data extends DataView with DataChangeListenersMixin<String> implements Map
     other.forEach((key, value) {
       if (_fields.containsKey(key)) {
         _markChanged(key, new Change(_fields[key], value));
-        if(_fields[key] is DataView){
+        if(_fields[key] is DataView || _fields[key] is DataList){
           _removeOnDataChangeListener(key);
         }
       } else {
@@ -231,7 +231,7 @@ class Data extends DataView with DataChangeListenersMixin<String> implements Map
         _markAdded(key);
       }
 
-      if(value is DataView){
+      if(value is DataView || value is DataList){
         _addOnDataChangeListener(key, value);
       }
 
@@ -263,7 +263,7 @@ class Data extends DataView with DataChangeListenersMixin<String> implements Map
       _markChanged(key, new Change(_fields[key], null));
       _markRemoved(key);
 
-      if(_fields[key] is DataView){
+      if(_fields[key] is DataView || _fields[key] is DataList){
         _removeOnDataChangeListener(key);
       }
 

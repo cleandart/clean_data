@@ -415,8 +415,7 @@ void main() {
       }));
     });
 
-    group('nested', () {
-
+    group('(Nested Data)', () {
       test('listens to changes of its children.', () {
         // given
         var dataObj = new Data.from({'child': new Data()});
@@ -469,6 +468,7 @@ void main() {
         });
       });
 
+      //TODO is this necessary?
       test('listen on multiple children added.', () {
         // given
         var data = {'child1': new Data(), 'child2': new Data(), 'child3': new Data()};
@@ -498,6 +498,7 @@ void main() {
         }));
       });
 
+      //TODO is this necessary?
       test('remove children.', () {
         // given
         var dataObj = new Data.from({'child1': new Data(), 'child2': new Data(), 'child3': new Data()});
@@ -581,5 +582,59 @@ void main() {
         });
       });
     });
- });
+
+    group('(Nested DataList)', () {
+        test('listens to changes of its children.', () {
+          // given
+          var dataObj = new Data.from({'child': new DataList()});
+
+          // when
+          dataObj['child'].add('John Doe');
+
+          // then
+          dataObj.onChange.listen(expectAsync1((ChangeSet event) {
+            expect(event.changedItems['child'].addedItems, equals([0]));
+          }));
+        });
+
+        test('do not listen to removed children changes.', () {
+          // given
+          var child = new DataList();
+          var dataObj = new Data.from({'child': child});
+          var onChange = new Mock();
+
+          // when
+          dataObj.remove('child');
+          var future = new Future.delayed(new Duration(milliseconds: 20), () {
+            dataObj.onChangeSync.listen((e) => onChange(e));
+            child.add('John Doe');
+          });
+
+          // then
+          future.then((_) {
+            onChange.getLogs().verify(neverHappened);
+          });
+        });
+
+        test('do not listen to changed children changes.', () {
+          // given
+          var childOld = new DataList();
+          var childNew = new DataList();
+          var dataObj = new Data.from({'child': childOld});
+          var onChange = new Mock();
+
+          // when
+          dataObj['child'] = childNew;
+          var future = new Future.delayed(new Duration(milliseconds: 20), () {
+            dataObj.onChangeSync.listen((e) => onChange(e));
+            childOld.add('John Doe');
+          });
+
+          // then
+          future.then((_) {
+            onChange.getLogs().verify(neverHappened);
+          });
+        });
+    });
+  });
 }

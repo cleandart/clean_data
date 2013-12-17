@@ -242,7 +242,8 @@ abstract class DataChangeListenersMixin<T> {
   /**
    * Starts listening to changes on [dataObj].
    */
-  void _addOnDataChangeListener(T key, DataView dataObj) {
+  //TODO ChangeDataListener
+  void _addOnDataChangeListener(T key, dynamic dataObj) {
     if (_dataListeners.containsKey(dataObj)) return;
 
     _dataListeners[key] = dataObj.onChangeSync.listen((changeEvent) {
