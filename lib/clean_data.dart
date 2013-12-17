@@ -90,6 +90,7 @@ library clean_data;
 import "dart:core";
 import "dart:async";
 import "dart:collection";
+import 'dart:math';
 
 part 'src/data.dart';
 part 'src/data_list.dart';

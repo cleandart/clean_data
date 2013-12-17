@@ -31,7 +31,7 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
    * Removes the objects in the range [start] inclusive to [end] exclusive
    * and replaces them with the contents of the [iterable].
    */
-  void replaceRange(int start, int end, Iterable iterable){
+  void replaceRange(int start, int end, Iterable iterable, {author: null}){
     //TODO
   }
 
@@ -47,7 +47,7 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
    * Overwrites objects of `this` with the objects of [iterable], starting
    * at position [index] in this list.
    */
-  void setAll(int index, Iterable iterable){
+  void setAll(int index, Iterable iterable, {author: null}){
     //TODO
   }
 
@@ -69,7 +69,7 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
   /**
    * Removes the object at position [index] from this list.
    */
-  dynamic removeAt(int index){
+  dynamic removeAt(int index, {author: null}){
     //TODO
   }
 
@@ -84,21 +84,22 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
    * Removes all objects from this list that satisfy [test].
    */
   //TODO iterable mixin?
-  void removeWhere(bool test(dynamic element)){
+  void removeWhere(bool test(dynamic element), {author: null}){
     //TODO
   }
 
   /**
    * Removes all objects from this list that fail to satisfy [test].
    */
-  void retainWhere(bool test(dynamic element)){
+  void retainWhere(bool test(dynamic element), {author: null}){
     //TODO
   }
 
   /**
    * Sorts this list according to the order specified by the [compare] function.
    */
-  void sort([int compare(dynamic a, dynamic b)]){
+  //TODO author (problem with named and positional paramters)
+  void sort([int compare(dynamic a, dynamic b), author=null]){
     //TODO
   }
 
@@ -106,28 +107,30 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
    * Sets the objects in the range [start] inclusive to [end] exclusive
    * to the given [fillValue].
    */
-  void fillRange(int start, int end, [dynamic fillValue]){
+  //TODO author
+  void fillRange(int start, int end, [dynamic fillValue, author=null]){
     //TODO
   }
 
   /**
    * Shuffles the elements of this list randomly.
    */
-  void shuffle([Random random]){
+  //TODO author
+  void shuffle([Random random, author=null]){
     //TODO
   }
 
   /**
    * Inserts all objects of [iterable] at position [index] in this list.
    */
-  void insertAll(int index, Iterable iterable){
+  void insertAll(int index, Iterable iterable, {author: null}){
     //TODO
   }
 
   /**
    * Inserts the object at position [index] in this list.
    */
-  void insert(int index, dynamic element){
+  void insert(int index, dynamic element, {author: null}){
     //TODO
   }
 
@@ -145,14 +148,14 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
   /**
    * Pops and returns the last object in this list.
    */
-  dynamic removeLast(){
+  dynamic removeLast({author: null}){
     //TODO
   }
 
   /**
    * Removes the objects in the range [start] inclusive to [end] exclusive.
    */
-  void removeRange(int start, int end){
+  void removeRange(int start, int end, {author: null}){
     //TODO
   }
 
@@ -160,7 +163,8 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
    * Copies the objects of [iterable], skipping [skipCount] objects first,
    * into the range [start] inclusive to [end] exclusive of `this`.
    */
-  void setRange(int start, int end, Iterable iterable, [int skipCount = 0]){
+  //TODO author
+  void setRange(int start, int end, Iterable iterable, [int skipCount = 0, author=null]){
     //TODO
   }
 
