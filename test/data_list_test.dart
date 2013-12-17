@@ -402,6 +402,9 @@ void main() {
       dataList.insert(1, 'element1.5');
 
       // then
+      expect(new List.from(dataList), unorderedEquals(
+          ['element1','element1.5', 'element2', 'element3']));
+
       mock.getLogs().verify(happenedExactly(1));
       var changes = groupChanges(mock, 1);
       expect(changes[GROUP_CHANGED], unorderedEquals([1,2,3]));
@@ -418,6 +421,9 @@ void main() {
       dataList.insert(1, 'element1.25');
 
       // then
+      expect(new List.from(dataList), unorderedEquals(
+          ['element1','element1.25', 'element1.5', 'element2', 'element3']));
+
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.changedItems.keys, unorderedEquals([1,2]));
 
@@ -436,12 +442,15 @@ void main() {
 
     test('listen multiple elements inserted to beginning. (T23.5)', () {
       // given
-      DataList dataList = new DataList.from(['element1','element2', 'element3']);
+      DataList dataList = new DataList.from(['element1', 'element2', 'element3']);
 
       // when
       dataList.insertAll(0, ['element0.25', 'element0.5']);
 
       // then
+      expect(new List.from(dataList), unorderedEquals(
+          ['element0.25', 'element0.5', 'element1', 'element2', 'element3']));
+
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.changedItems.keys, unorderedEquals([0,1,2]));
 
@@ -472,6 +481,9 @@ void main() {
       dataList.removeAt(1);
 
       // then
+      expect(new List.from(dataList), unorderedEquals(
+          ['element1', 'element3', 'element4']));
+
       mock.getLogs().verify(happenedExactly(1));
       var changes = groupChanges(mock, 1);
       expect(changes[GROUP_CHANGED], unorderedEquals([1,2,3]));
@@ -488,6 +500,9 @@ void main() {
       dataList.removeAt(1);
 
       // then
+      expect(new List.from(dataList), unorderedEquals(
+          ['element1', 'element4', 'element5']));
+
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.changedItems.keys, unorderedEquals([1,2]));
 
@@ -512,6 +527,9 @@ void main() {
       dataList.removeRange(0,3);
 
       // then
+      expect(new List.from(dataList), unorderedEquals(
+          ['element4', 'element5']));
+
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.changedItems.keys, unorderedEquals([0,1]));
 
@@ -539,6 +557,9 @@ void main() {
       dataList.insert(1, 'element2');
 
       // then
+      expect(new List.from(dataList), unorderedEquals(
+          ['element1','element2', 'element3', 'element4', 'element5']));
+
       dataList.onChange.listen(protectAsync1((ChangeSet event) {
         expect(true, isFalse);
       }));
@@ -552,13 +573,16 @@ void main() {
       dataList.clear();
 
       // then
+      expect(new List.from(dataList), unorderedEquals(
+          []));
+
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.changedItems.keys, unorderedEquals([]));
         expect(event.addedItems, unorderedEquals([]));
         expect(event.removedItems, unorderedEquals([0,1,2]));
       }));
     });
-/*
+
     /**
      * Returns an [Iterable] of the objects in this list in reverse order.
      */
@@ -568,7 +592,7 @@ void main() {
       var mock = new Mock();
 
       // when
-      List reversed = dataList.reversed;
+      List reversed = new List.from(dataList.reversed);
 
       // then
       expect(reversed, equals(['element3','element2', 'element1']));
@@ -586,6 +610,9 @@ void main() {
       dataList.replaceRange(1, 3, ['new2', 'new3']);
 
       // then
+      expect(new List.from(dataList), unorderedEquals(
+          ['element1', 'new2', 'new3', 'element4']));
+
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.changedItems.keys, unorderedEquals([1,2]));
 
@@ -602,6 +629,7 @@ void main() {
       }));
     });
 
+    /*
     /**
      * Returns an [Iterable] that iterates over the objects in the range
      * [start] inclusive to [end] exclusive.
@@ -629,6 +657,9 @@ void main() {
       dataList.setAll(1, ['new2', 'new3']);
 
       // then
+      expect(new List.from(dataList), unorderedEquals(
+          ['element1','new2', 'new3', 'element4']));
+
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.changedItems.keys, unorderedEquals([1,2]));
 
@@ -699,6 +730,9 @@ void main() {
       dataList.removeWhere((el) => el == 'doge');
 
       // then
+      expect(new List.from(dataList), unorderedEquals(
+          ['element1', 'element4']));
+
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.changedItems.keys, unorderedEquals([1]));
 
@@ -722,6 +756,9 @@ void main() {
       dataList.retainWhere((el) => el == 'kitty');
 
       // then
+      expect(new List.from(dataList), unorderedEquals(
+          ['kitty', 'kitty']));
+
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.changedItems.keys, unorderedEquals([1]));
 
@@ -745,6 +782,9 @@ void main() {
       dataList.sort();
 
       // then
+      expect(new List.from(dataList), unorderedEquals(
+          ['element1','element2', 'element3', 'element4']));
+
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.changedItems.keys, unorderedEquals([0,1,3]));
 
@@ -777,6 +817,9 @@ void main() {
       dataList.fillRange(1, 3, 'kitty');
 
       // then
+      expect(new List.from(dataList), unorderedEquals(
+          ['element1','kitty', 'kitty', 'element4']));
+
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.changedItems.keys, unorderedEquals([1,2]));
 
@@ -823,6 +866,9 @@ void main() {
       dataList.insertAll(1, ['kitty', 'doge']);
 
       // then
+      expect(new List.from(dataList), unorderedEquals(
+          ['element1', 'kitty', 'doge', 'element2', 'element3', 'element4']));
+
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.changedItems.keys, unorderedEquals([1,2,3]));
 
@@ -866,6 +912,9 @@ void main() {
       dataList.removeLast();
 
       // then
+      expect(new List.from(dataList), unorderedEquals(
+          ['element1','element2', 'element3']));
+
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.changedItems.keys, unorderedEquals([]));
         expect(event.addedItems, unorderedEquals([]));
@@ -884,6 +933,9 @@ void main() {
       dataList.removeRange(1,3);
 
       // then
+      expect(new List.from(dataList), unorderedEquals(
+          ['element1', 'element4']));
+
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.changedItems.keys, unorderedEquals([1]));
 
@@ -905,9 +957,12 @@ void main() {
       DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
 
       // when
-      dataList.setRange(1,3, ['kid', 'kitty', 'doge'], 1);
+      dataList.setRange(1,3, ['just_kidding', 'kitty', 'doge'], 1);
 
       // then
+      expect(new List.from(dataList), unorderedEquals(
+          ['element1','kitty', 'doge', 'element4']));
+
       dataList.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.changedItems.keys, unorderedEquals([1,2]));
 

@@ -20,11 +20,18 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
    */
   int get length => _elements.length;
 
+  bool _checkRange(int start, int end){
+    if(end < start || start < 0 || _elements.length < end){
+      throw new ArgumentError("Incorrect range [$start, $end) for DataList of size ${_elements.length}");
+    }
+    return true;
+  }
+
   /**
    * Returns an [Iterable] of the objects in this list in reverse order.
    */
   Iterable get reversed{
-    //TODO
+    return _elements.reversed;
   }
 
   /**
@@ -32,7 +39,16 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
    * and replaces them with the contents of the [iterable].
    */
   void replaceRange(int start, int end, Iterable iterable, {author: null}){
-    //TODO
+    _checkRange(start, end);
+
+    var iter = iterable.iterator;
+    iter.moveNext();
+    for(int key = start ; key < end ; key++, iter.moveNext()){
+      _markChanged(key, new Change(_elements[key], iter.current));
+      _elements[key] = iter.current;
+    }
+
+    _notify(author: author);
   }
 
   /**
@@ -176,10 +192,8 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
    */
   //TODO check if optimal when removing from the end of the list
   void removeRange(int start, int end, {author: null}){
-    //bad interval
-    if(end < start || start < 0 || _elements.length < end){
-      throw new ArgumentError("Incorrect range [$start, $end) for DataList of size ${_elements.length}");
-    }
+    _checkRange(start, end);
+
     //nothing to do
     if(end == start){
       return;
