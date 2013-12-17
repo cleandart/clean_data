@@ -37,14 +37,16 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
    * Removes the objects in the range [start] inclusive to [end] exclusive
    * and replaces them with the contents of the [iterable].
    */
-  void replaceRange(int start, int end, Iterable iterable, {author: null}){
+  void replaceRange(int start, int end, Iterable iterable, {skipCount:0, author: null}){
     _checkRange(start, end);
     if(iterable.length < end-start){
       throw new ArgumentError("Must give at least ${end - start} elements in iterable.");
     }
 
     var iter = iterable.iterator;
-    iter.moveNext();
+    for(int i=0; i<=skipCount ;i++){
+      iter.moveNext();
+    }
     for(int key = start ; key < end ; key++, iter.moveNext()){
       _markChanged(key, new Change(_elements[key], iter.current));
       _elements[key] = iter.current;
@@ -139,10 +141,8 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
     target.sort(compare);
 
     for(int key=0; key<_elements.length ; key++){
-      if(_elements[key] != target[key]){
-        _markChanged(key, new Change(_elements[key], target[key]));
-        _elements[key] = target[key];
-      }
+      _markChanged(key, new Change(_elements[key], target[key]));
+      _elements[key] = target[key];
     }
 
     _notify(author: author);
@@ -154,7 +154,12 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
    */
   //TODO author
   void fillRange(int start, int end, [dynamic fillValue, author=null]){
-    //TODO
+    for(int key=start ; key<end; key++){
+      _markChanged(key, new Change(_elements[key], fillValue));
+      _elements[key] = fillValue;
+    }
+
+    _notify(author: author);
   }
 
   /**
@@ -162,7 +167,15 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
    */
   //TODO author
   void shuffle([Random random, author=null]){
-    //TODO
+    List target = new List.from(_elements, growable: false);
+    target.shuffle(random);
+
+    for(int key=0; key<_elements.length ; key++){
+      _markChanged(key, new Change(_elements[key], target[key]));
+      _elements[key] = target[key];
+    }
+
+    _notify(author: author);
   }
 
   /**
@@ -200,13 +213,13 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
 
   /**
    * Returns an unmodifiable [Map] view of `this`.
-   *
+  *
    * The map uses the indices of this list as keys and the corresponding objects
    * as values. The `Map.keys` [Iterable] iterates the indices of this list
    * in numerical order.
    */
   Map<int, dynamic> asMap(){
-    //TODO
+    return _elements.asMap();
   }
 
   /**
@@ -252,7 +265,7 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
    */
   //TODO author
   void setRange(int start, int end, Iterable iterable, [int skipCount = 0, author=null]){
-    //TODO
+    replaceRange(start, end, iterable, skipCount: skipCount, author: author);
   }
 
 

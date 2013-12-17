@@ -822,7 +822,7 @@ void main() {
         expect(event.removedItems, unorderedEquals([]));
       }));
     });
-/*
+
     /**
      * Sets the objects in the range [start] inclusive to [end] exclusive
      * to the given [fillValue].
@@ -996,7 +996,6 @@ void main() {
         expect(event.removedItems, unorderedEquals([]));
       }));
     });
-    */
 
     test(' removeAll (T46)', () {
       // given
@@ -1022,6 +1021,29 @@ void main() {
 
         expect(event.addedItems, unorderedEquals([]));
         expect(event.removedItems, unorderedEquals([3,4]));
+      }));
+    });
+
+    /**
+     * Returns an unmodifiable [DataView] view of `this`.
+    *
+     * The map uses the indices of this list as keys and the corresponding objects
+     * as values. The `Map.keys` [Iterable] iterates the indices of this list
+     * in numerical order.
+     */
+    test(' implements List.asMap(). (T47)', () {
+      // given
+      DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
+
+      // when
+      Map map = dataList.asMap();
+
+      // then
+      expect(map, equals({
+        0: 'element1',
+        1: 'element2',
+        2: 'element3',
+        3: 'element4',
       }));
     });
  });
