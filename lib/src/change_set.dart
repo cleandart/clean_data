@@ -157,7 +157,7 @@ class ChangeSet {
 
     var equalityChanges = new Set();
     changedItems.forEach((d,cs){
-      if (cs is Change && cs.oldValue == cs.newValue) {
+      if (cs is Change && cs.oldValue == cs.newValue && cs.newValue is! DataView) {
        equalityChanges.add(d);
       }
     });

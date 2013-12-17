@@ -116,21 +116,26 @@ class Data extends DataView with DataChangeListenersMixin<String> implements Map
    */
   void addAll(Map other, {author: null}) {
     other.forEach((key, value) {
-      if(!(value is ChangeNotificationsMixin)) {
+      if(value is! ChangeNotificationsMixin) {
         value = new DataReference(value);
       }
       
       if (_fields.containsKey(key)) {
-        _markChanged(key, new Change(_fields[key], value));
-        _removeOnDataChangeListener(key);
+        if(_fields[key] is DataReference && value is DataReference) {
+          _fields[key].value = value.value;
+        }
+        else {
+          _markChanged(key, new Change(_fields[key], value));
+          _removeOnDataChangeListener(key);          
+          _addOnDataChangeListener(key, value);
+          _fields[key] = value;
+        }
       } else {
         _markChanged(key, new Change(null, value));
-        _markAdded(key);
+        _markAdded(key);        
+        _addOnDataChangeListener(key, value);
+        _fields[key] = value;
       }
-
-      _addOnDataChangeListener(key, value);
-
-      _fields[key] = value;
     });
     _notify(author: author);
   }
@@ -139,13 +144,7 @@ class Data extends DataView with DataChangeListenersMixin<String> implements Map
    * Assigns the [value] to the [key] field.
    */
   void operator[]=(String key, value) {
-    if(_fields.containsKey(key) && _fields[key] is DataReference) {
-      _fields[key].value = value;
-    }
-    else {
-      add(key, value);
-     _notify();
-    }
+    add(key, value);
   }
   
   /**
@@ -153,7 +152,7 @@ class Data extends DataView with DataChangeListenersMixin<String> implements Map
    * expection is thrown.
    */
   DataReference ref(String key) {
-    if(!(_fields[key] is  DataReference)) throw new Exception('"$key" is not primitive data type.');
+    if(_fields[key] is!  DataReference) throw new Exception("'$key' is not primitive data type.");
     return _fields[key];
   }
   
@@ -172,7 +171,7 @@ class Data extends DataView with DataChangeListenersMixin<String> implements Map
       _markChanged(key, new Change(_fields[key], null));
       _markRemoved(key);
 
-      if(_fields[key] is DataView){
+      if(_fields[key] is ChangeNotificationsMixin){
         _removeOnDataChangeListener(key);
       }
 

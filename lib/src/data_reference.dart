@@ -33,4 +33,6 @@ class DataReference extends Object with ChangeNotificationsMixin {
    * Creates new DataReference with [_value]
    */
   DataReference(this._value);
+  
+  String toString() => _value.toString();
 }
