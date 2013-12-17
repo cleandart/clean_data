@@ -429,6 +429,17 @@ void main() {
           expect(event.changedItems['child'].addedItems, equals(['name']));
         }));
       });
+      
+      test('dataView can be overwritten.', () {
+        // given
+        var dataObj = new Data.from({'child': new Data()});
+        dataObj['child'] = new Data();
+        // when
+        dataObj['child']['name'] = 'John Doe';
+
+        // then
+
+      });
 
       test('do not listen to removed children changes.', () {
         // given
@@ -580,6 +591,92 @@ void main() {
           onChange.getLogs().verify(happenedOnce);
         });
       });
+      
+      
+      test('when child is removed, changed and re-added.', () {
+        Data child = new Data(), dataObj = new Data.from({'child': child});
+        dataObj.remove('child');
+        child['name'] = 'coolName';
+        dataObj.add('child', child);
+        dataObj.onChange.listen(expectAsync1((ChangeSet event) {
+          expect(event.changedItems.length, equals(1));
+        }));
+      });
+      
+      test('when child is removed, changed and re-added.', () {
+        Data child = new Data(), dataObj = new Data.from({'child': child});
+        Data childNew = new Data();
+        
+        dataObj.add('child', childNew);
+        child['name'] = 'coolName';
+        dataObj.add('child', child);
+        
+        dataObj.onChange.listen(expectAsync1((event) {
+          expect(event.changedItems.length, equals(1));
+        }));
+      });
     });
- });
+    
+    group('DataReference', () {
+      test('change value of datareference with map interface.', () {
+        var data = new Data.from({'name': 'name'});
+        var ref = data.ref('name');
+          
+        ref.onChangeSync.listen(expectAsync1((_) {
+          expect(ref.value, 'newName');
+        }));
+        
+        data.onChange.listen(expectAsync1((ChangeSet event) {
+          expect(event.changedItems['name'].newValue, equals('newName'));
+          expect(event.changedItems['name'].oldValue, equals('name'));
+        }));
+        
+        data['name'] = 'newName'; 
+        expect(data['name'], equals('newName'));
+      });
+         
+      test('change value of datareference with map interface.', () {
+        var data = new Data.from({'name': 'name'});
+        var ref = data.ref('name');
+        
+        ref.onChange.listen(expectAsync1((_) {
+          expect(ref.value, 'newName');
+        }));
+        
+        data.onChange.listen(expectAsync1((ChangeSet event) {
+          expect(event.changedItems['name'].newValue, equals('newName'));
+          expect(event.changedItems['name'].oldValue, equals('name'));
+        }));
+        
+        ref.value = 'newName';
+        expect(data['name'], equals('newName'));
+      });
+      
+      test('reference changes, when ChangeNotificationsMixin is assigned.', () {
+        //given
+        var data = new Data();
+        data['name'] = 'Joe';
+        var name = new Data.from({'first': 'Joe', 'second': 'Doe'});
+        //when
+        var ref1 = data.ref('name');
+        data['name'] = name;
+        //then
+        expect(() => data.ref('name'), throws);
+      });
+      
+     test('reference does not change when another primitive is assigned.', () {
+        //given
+        var data = new Data();
+        data['name'] = 'Joe';
+        var name = new Data.from({'first': 'Joe', 'second': 'Doe'});
+        //when
+        var ref1 = data.ref('name');
+        data['name'] = 300;
+        var ref2 = data.ref('name');
+        ref1.value = 500;
+        //then
+        expect(ref1, equals(ref2));
+      });
+    });
+  });
 }

@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 
+import 'data_reference_test.dart' as data_reference_test;
 import 'data_test.dart' as data_test;
 import 'data_collection_test.dart' as data_collection_test;
 import 'hash_index_test.dart' as hash_index_test;
@@ -25,6 +26,7 @@ main() {
 run(configuration) {
   unittestConfiguration = configuration;
 
+  data_reference_test.main();
   data_test.main();
   data_collection_test.main();
   change_streams_test.main();

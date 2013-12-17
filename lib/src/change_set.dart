@@ -15,7 +15,10 @@ class Change {
    * Creates new [Change] from information about the value before change
    * [oldValue] and after the change [newValue].
    */
-  Change(this.oldValue, this.newValue);
+  Change(this.oldValue, this.newValue) {
+    if(this.oldValue is DataReference) this.oldValue = this.oldValue.value;
+    if(this.newValue is DataReference) this.newValue = this.newValue.value;
+  }
 
   /**
    * Applies another [change] to get representation of whole change.
@@ -31,7 +34,8 @@ class Change {
     return new Change(oldValue, newValue);
   }
 
-  String toString() => "$oldValue->$newValue";
+  String toString() => "Change($oldValue->$newValue)";
+
 }
 
 /**
@@ -98,11 +102,24 @@ class ChangeSet {
    * Marks all the changes in [ChangeSet] or [Change] for a
    * given [dataObj].
    */
-  void markChanged(dynamic dataObj, changeSet) {
-    if(changedItems.containsKey(dataObj)) {
-      changedItems[dataObj].mergeIn(changeSet);
+  void markChanged(dynamic key, changeSet) {
+    if(changedItems.containsKey(key)) {
+      if(changeSet is Change) {
+        if(changedItems[key] is Change) {
+          changedItems[key].mergeIn(changeSet);
+        }
+        else { 
+          changedItems[key] = changeSet;
+        }
+      }
+      else {
+        if(changedItems[key] is Change) {}
+        else {
+          changedItems[key].mergeIn(changeSet);
+        }
+      }
     } else {
-      changedItems[dataObj] = changeSet.clone();
+      changedItems[key] = changeSet.clone();
     }
   }
 
@@ -140,7 +157,7 @@ class ChangeSet {
 
     var equalityChanges = new Set();
     changedItems.forEach((d,cs){
-      if (cs is Change && cs.oldValue == cs.newValue) {
+      if (cs is Change && cs.oldValue == cs.newValue && cs.newValue is! DataView) {
        equalityChanges.add(d);
       }
     });
@@ -150,6 +167,6 @@ class ChangeSet {
   }
 
   String toString() {
-    return "Added:" + addedItems.toString() + " Changed:" + changedItems.toString() + " Removed:" + removedItems.toString();
+    return "ChangeSet(Added:" + addedItems.toString() + " Changed:" + changedItems.toString() + " Removed:" + removedItems.toString()+ ')';
   }
 }

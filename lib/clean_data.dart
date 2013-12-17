@@ -91,6 +91,7 @@ import "dart:core";
 import "dart:async";
 import "dart:collection";
 
+part 'src/data_reference.dart';
 part 'src/data.dart';
 part 'src/data_collection.dart';
 part 'src/change_set.dart';
@@ -100,3 +101,5 @@ part 'src/collections/filtered_collection_view.dart';
 part 'src/collections/mapped_collection_view.dart';
 
 part 'src/hash_index.dart';
+part 'src/data_change_listeners_mixin.dart';
+part 'src/change_notifications_mixin.dart';
