@@ -175,8 +175,10 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
   /**
    * Creates a new [DataList] object from [Iterable]
    */
-  factory DataList.from(Iterable) {
-
+  factory DataList.from(Iterable other, {author: null}) {
+    DataList result = new DataList();
+    result.addAll(other, author: author);
+    return result;
   }
 
   dynamic operator[](index) => _elements[index];
@@ -203,21 +205,14 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
   }
 
   /**
-   * Adds all key-value pairs of [other] to this data.
+   * Adds all key-value pairs of [other] to end of [DataList].
    */
-  void addAll(List other, {author: null}) {
-    //TODO
-    /*
-    other.forEach((key, value) {
-      if (_fields.containsKey(key)) {
-        _markChanged(key, new Change(_fields[key], value));
-      } else {
-        _markChanged(key, new Change(null, value));
-        _markAdded(key);
-      }
-      _fields[key] = value;
+  void addAll(Iterable other, {author: null}) {
+    other.forEach((element) {
+      _markAdded(_elements.length);
+      _elements.add(element);
     });
-    _notify(author: author); */
+    _notify(author: author);
   }
 
   /**
