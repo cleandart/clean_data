@@ -14,7 +14,7 @@ abstract class DataView extends Object with ChangeNotificationsMixin {
    * Because null values are supported, one should use containsKey to
    * distinguish between an absent key and a null value.
    */
-  dynamic operator[](key) => _fields[key];
+  dynamic operator[](key) => (_fields[key] is DataReference) ? _fields[key].value : _fields[key];
 
   /**
    * Returns true if there is no {key, value} pair in the data object.
@@ -40,7 +40,7 @@ abstract class DataView extends Object with ChangeNotificationsMixin {
    * The values of [Data].
    */
   Iterable get values {
-    return _fields.values;
+    return _fields.values.map((value) => (value is DataReference) ? value.value : value);
   }
 
   /**
@@ -58,7 +58,7 @@ abstract class DataView extends Object with ChangeNotificationsMixin {
   }
 
   bool containsValue(Object value) {
-    return _fields.containsValue(value);
+    return values.contains(value);
   }
   /**
    * Converts to Map.
@@ -111,22 +111,24 @@ class Data extends DataView with DataChangeListenersMixin<String> implements Map
 
   /**
    * Adds all key-value pairs of [other] to this data.
+   * If value doesn't mixin ChangeNotificationMixin a new [DataReference] is 
+   * created for this value.
    */
   void addAll(Map other, {author: null}) {
     other.forEach((key, value) {
+      if(!(value is ChangeNotificationsMixin)) {
+        value = new DataReference(value);
+      }
+      
       if (_fields.containsKey(key)) {
         _markChanged(key, new Change(_fields[key], value));
-        if(_fields[key] is DataView){
-          _removeOnDataChangeListener(key);
-        }
+        _removeOnDataChangeListener(key);
       } else {
         _markChanged(key, new Change(null, value));
         _markAdded(key);
       }
 
-      if(value is DataView){
-        _addOnDataChangeListener(key, value);
-      }
+      _addOnDataChangeListener(key, value);
 
       _fields[key] = value;
     });
@@ -137,10 +139,24 @@ class Data extends DataView with DataChangeListenersMixin<String> implements Map
    * Assigns the [value] to the [key] field.
    */
   void operator[]=(String key, value) {
-    add(key, value);
-    _notify();
+    if(_fields.containsKey(key) && _fields[key] is DataReference && 0) {
+      _fields[key].value = value;
+    }
+    else {
+      add(key, value);
+     _notify();
+    }
   }
-
+  
+  /**
+   * Return [DataReference] for key. If Data[key] is not [DataReference] 
+   * expection is thrown.
+   */
+  DataReference ref(String key) {
+    if(!(_fields[key] is  DataReference)) throw new Exception('"$key" is not primitive data type.');
+    return _fields[key];
+  }
+  
   /**
    * Removes [key] from the data object.
    */

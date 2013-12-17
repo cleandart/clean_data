@@ -15,12 +15,15 @@ class Change {
    * Creates new [Change] from information about the value before change
    * [oldValue] and after the change [newValue].
    */
-  Change(this.oldValue, this.newValue);
+  Change(this.oldValue, this.newValue) {
+    if(this.oldValue is DataReference) this.oldValue = this.oldValue.value;
+    if(this.newValue is DataReference) this.newValue = this.newValue.value;
+  }
 
   /**
    * Applies another [change] to get representation of whole change.
    */
-  void mergeIn(Change change) {
+  void mergeIn(change) {
     newValue = change.newValue;
   }
 
