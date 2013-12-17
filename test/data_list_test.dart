@@ -559,80 +559,6 @@ void main() {
     });
 
     /**
-     * Removes the objects in the range [start] inclusive to [end] exclusive
-     * and replaces them with the contents of the [iterable].
-     */
-    test(' implements List.replaceRange(). (T29)', () {
-      // given
-      DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
-
-      // when
-      dataList.replaceRange(1, 3, ['new2', 'new3']);
-
-      // then
-      expect(new List.from(dataList), unorderedEquals(
-          ['element1', 'new2', 'new3', 'element4']));
-
-      dataList.onChange.listen(expectAsync1((ChangeSet event) {
-        expect(event.changedItems.keys, unorderedEquals([1,2]));
-
-        Change change1 = event.changedItems[1];
-        expect(change1.oldValue, equals('element2'));
-        expect(change1.newValue, equals('new2'));
-
-        Change change2 = event.changedItems[2];
-        expect(change2.oldValue, equals('element3'));
-        expect(change2.newValue, equals('new3'));
-
-        expect(event.addedItems, unorderedEquals([]));
-        expect(event.removedItems, unorderedEquals([]));
-      }));
-    });
-
-    /**
-     * Overwrites objects of `this` with the objects of [iterable], starting
-     * at position [index] in this list.
-     */
-    test(' implements List.setAll(). (T31)', () {
-      // given
-      DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
-
-      // when
-      dataList.setAll(1, ['new2', 'new3', 'new4']);
-
-      // then
-      expect(new List.from(dataList), unorderedEquals(
-          ['element1','new2', 'new3', 'new4']));
-
-      dataList.onChange.listen(expectAsync1((ChangeSet event) {
-        expect(event.changedItems.keys, unorderedEquals([1,2,3]));
-
-        Change change1 = event.changedItems[1];
-        expect(change1.oldValue, equals('element2'));
-        expect(change1.newValue, equals('new2'));
-
-        Change change2 = event.changedItems[2];
-        expect(change2.oldValue, equals('element3'));
-        expect(change2.newValue, equals('new3'));
-
-        Change change3 = event.changedItems[3];
-        expect(change3.oldValue, equals('element4'));
-        expect(change3.newValue, equals('new4'));
-
-        expect(event.addedItems, unorderedEquals([]));
-        expect(event.removedItems, unorderedEquals([]));
-      }));
-    });
-
-    test(' implements List.setAll(). (T31.5)', () {
-      // given
-      DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
-
-      // then
-      expect(()=>dataList.setAll(1, ['new2', 'new3']), throwsArgumentError);
-    });
-
-    /**
      * Removes all objects from this list that satisfy [test].
      */
     test(' implements List.removeWhere(). (T36)', () {
@@ -681,90 +607,6 @@ void main() {
 
         expect(event.addedItems, unorderedEquals([]));
         expect(event.removedItems, unorderedEquals([2,3]));
-      }));
-    });
-
-    /**
-     * Sorts this list according to the order specified by the [compare] function.
-     */
-    test(' implements List.sort(). (T38)', () {
-      // given
-      DataList dataList = new DataList.from(['element2','element4', 'element3', 'element1']);
-
-      // when
-      dataList.sort();
-
-      // then
-      expect(new List.from(dataList), unorderedEquals(
-          ['element1','element2', 'element3', 'element4']));
-
-      dataList.onChange.listen(expectAsync1((ChangeSet event) {
-        expect(event.changedItems.keys, unorderedEquals([0,1,3]));
-
-        Change change1 = event.changedItems[0];
-        expect(change1.oldValue, equals('element2'));
-        expect(change1.newValue, equals('element1'));
-
-        Change change2 = event.changedItems[1];
-        expect(change2.oldValue, equals('element4'));
-        expect(change2.newValue, equals('element2'));
-
-        Change change3 = event.changedItems[3];
-        expect(change3.oldValue, equals('element1'));
-        expect(change3.newValue, equals('element4'));
-
-        expect(event.addedItems, unorderedEquals([]));
-        expect(event.removedItems, unorderedEquals([]));
-      }));
-    });
-
-    /**
-     * Sets the objects in the range [start] inclusive to [end] exclusive
-     * to the given [fillValue].
-     */
-    test(' implements List.fillRange(). (T39)', () {
-      // given
-      DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
-
-      // when
-      dataList.fillRange(1, 3, 'kitty');
-
-      // then
-      expect(new List.from(dataList), unorderedEquals(
-          ['element1','kitty', 'kitty', 'element4']));
-
-      dataList.onChange.listen(expectAsync1((ChangeSet event) {
-        expect(event.changedItems.keys, unorderedEquals([1,2]));
-
-        Change change1 = event.changedItems[1];
-        expect(change1.oldValue, equals('element2'));
-        expect(change1.newValue, equals('kitty'));
-
-        Change change2 = event.changedItems[2];
-        expect(change2.oldValue, equals('element3'));
-        expect(change2.newValue, equals('kitty'));
-
-        expect(event.addedItems, unorderedEquals([]));
-        expect(event.removedItems, unorderedEquals([]));
-      }));
-    });
-
-    /**
-     * Shuffles the elements of this list randomly.
-     */
-    test(' implements List.shuffle(). (T40)', () {
-      // given
-      DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
-
-      // when
-      dataList.shuffle();
-
-      // then
-      dataList.onChange.listen(expectAsync1((ChangeSet event) {
-        //TODO changed items
-
-        expect(event.addedItems, unorderedEquals([]));
-        expect(event.removedItems, unorderedEquals([]));
       }));
     });
 
@@ -841,33 +683,6 @@ void main() {
 
         expect(event.addedItems, unorderedEquals([]));
         expect(event.removedItems, unorderedEquals([2,3]));
-      }));
-    });
-
-    test(' implements List.setRange(). (T45)', () {
-      // given
-      DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
-
-      // when
-      dataList.setRange(1,3, ['just_kidding', 'kitty', 'doge'], 1);
-
-      // then
-      expect(new List.from(dataList), unorderedEquals(
-          ['element1','kitty', 'doge', 'element4']));
-
-      dataList.onChange.listen(expectAsync1((ChangeSet event) {
-        expect(event.changedItems.keys, unorderedEquals([1,2]));
-
-        Change change1 = event.changedItems[1];
-        expect(change1.oldValue, equals('element2'));
-        expect(change1.newValue, equals('kitty'));
-
-        Change change2 = event.changedItems[2];
-        expect(change2.oldValue, equals('element3'));
-        expect(change2.newValue, equals('doge'));
-
-        expect(event.addedItems, unorderedEquals([]));
-        expect(event.removedItems, unorderedEquals([]));
       }));
     });
 

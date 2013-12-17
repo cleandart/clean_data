@@ -86,36 +86,6 @@ class DataList extends Object with ListMixin, ChangeNotificationsMixin implement
   }
 
   /**
-   * Removes the objects in the range [start] inclusive to [end] exclusive
-   * and replaces them with the contents of the [iterable].
-   */
-  void replaceRange(int start, int end, Iterable iterable, {skipCount:0, author: null}){
-    _checkRange(start, end);
-    if(iterable.length < end-start){
-      throw new ArgumentError("Must give at least ${end - start} elements in iterable.");
-    }
-
-    var iter = iterable.iterator;
-    for(int i=0; i<=skipCount ;i++){
-      iter.moveNext();
-    }
-    for(int key = start ; key < end ; key++, iter.moveNext()){
-      _markChanged(key, new Change(_elements[key], iter.current));
-      _elements[key] = iter.current;
-    }
-
-    _notify(author: author);
-  }
-
-  /**
-   * Overwrites objects of `this` with the objects of [iterable], starting
-   * at position [index] in this list.
-   */
-  void setAll(int index, Iterable iterable, {author: null}){
-    replaceRange(index, _elements.length, iterable, author: author);
-  }
-
-  /**
    * Removes the object at position [index] from this list.
    */
   dynamic removeAt(int index, {author: null}){
@@ -225,14 +195,4 @@ class DataList extends Object with ListMixin, ChangeNotificationsMixin implement
 
     _notify(author: author);
   }
-
-  /**
-   * Copies the objects of [iterable], skipping [skipCount] objects first,
-   * into the range [start] inclusive to [end] exclusive of `this`.
-   */
-  //TODO author
-  void setRange(int start, int end, Iterable iterable, [int skipCount = 0, author=null]){
-    replaceRange(start, end, iterable, skipCount: skipCount, author: author);
-  }
-
 }
