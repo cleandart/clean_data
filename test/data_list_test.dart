@@ -788,7 +788,7 @@ void main() {
         expect(event.removedItems, unorderedEquals([2,3]));
       }));
     });
-/*
+
     /**
      * Sorts this list according to the order specified by the [compare] function.
      */
@@ -822,7 +822,7 @@ void main() {
         expect(event.removedItems, unorderedEquals([]));
       }));
     });
-
+/*
     /**
      * Sets the objects in the range [start] inclusive to [end] exclusive
      * to the given [fillValue].

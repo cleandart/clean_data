@@ -103,8 +103,8 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
    */
   void removeWhere(bool test(dynamic element), {author: null}){
     List toRemove = [];
-    for(int i=0; i<_elements.length ; i++){
-        if(test(_elements[i])) toRemove.add(i);
+    for(int key=0; key<_elements.length ; key++){
+        if(test(_elements[key])) toRemove.add(key);
     };
     removeAll(toRemove, author: author);
   }
@@ -114,8 +114,8 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
    */
   void retainWhere(bool test(dynamic element), {author: null}){
     List toRemove = [];
-    for(int i=0; i<_elements.length ; i++){
-        if(!test(_elements[i])) toRemove.add(i);
+    for(int key=0; key<_elements.length ; key++){
+        if(!test(_elements[key])) toRemove.add(key);
     };
     removeAll(toRemove, author: author);
   }
@@ -135,7 +135,17 @@ class DataList extends Object with IterableMixin, ChangeNotificationsMixin imple
    */
   //TODO author (problem with named and positional paramters)
   void sort([int compare(dynamic a, dynamic b), author=null]){
-    //TODO
+    List target = new List.from(_elements, growable: false);
+    target.sort(compare);
+
+    for(int key=0; key<_elements.length ; key++){
+      if(_elements[key] != target[key]){
+        _markChanged(key, new Change(_elements[key], target[key]));
+        _elements[key] = target[key];
+      }
+    }
+
+    _notify(author: author);
   }
 
   /**
