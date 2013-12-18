@@ -47,5 +47,17 @@ void main() {
       
       ref.value = 'newValue';
     });
+    
+    test('Listen on changeSync with Author(T05)', () {
+      DataReference ref = new DataReference('oldValue');
+      
+      ref.onChangeSync.listen(expectAsync1((event) {
+        expect(event['change'].oldValue , equals('oldValue'));
+        expect(event['change'].newValue , equals('newValue'));
+        expect(event['author'], equals('VacuumLabs'));
+      }));
+      
+      ref.changeValue('newValue', author: 'VacuumLabs');
+    });
   });
 }

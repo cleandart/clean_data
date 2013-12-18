@@ -415,8 +415,7 @@ void main() {
       }));
     });
 
-    group('nested', () {
-
+    group('(Nested Data)', () {
       test('listens to changes of its children.', () {
         // given
         var dataObj = new Data.from({'child': new Data()});
@@ -480,35 +479,25 @@ void main() {
         });
       });
 
-      test('listen on multiple children added.', () {
+      test('listen on multiple children changed.', () {
         // given
-        var data = {'child1': new Data(), 'child2': new Data(), 'child3': new Data()};
-        var dataObj = new Data();
+        var dataObj = new Data.from({'child1': new Data(), 'child2': new Data(), 'child3': new Data()});
         var mock = new Mock();
-        dataObj.onChangeSync.listen((event) => mock.handler(event));
 
         // when
-        dataObj.addAll(data, author: 'John Doe');
-
-        // then sync onChange propagates information about all changes and
-        // adds
-        mock.getLogs().verify(happenedOnce);
-        var event = mock.getLogs().first.args.first;
-        expect(event['author'], equals('John Doe'));
-
-        var changeSet = event['change'];
-        expect(changeSet.removedItems.isEmpty, isTrue);
-        expect(changeSet.addedItems, unorderedEquals(data.keys));
-        expect(changeSet.changedItems.length, equals(3));
+        dataObj['child1']['name'] = 'John Doe';
+        dataObj['child2']['name'] = 'Mills';
+        dataObj['child3']['name'] = 'Somerset';
 
         // but async onChange drops information about changes in added items.
-        dataObj.onChange.listen(expectAsync1((changeSet) {
-          expect(changeSet.addedItems, unorderedEquals(data.keys));
-          expect(changeSet.removedItems.isEmpty, isTrue);
-          expect(changeSet.changedItems.isEmpty, isTrue);
+        dataObj.onChange.listen(expectAsync1((ChangeSet event) {
+          expect(event.changedItems['child1'].addedItems, equals(['name']));
+          expect(event.changedItems['child2'].addedItems, equals(['name']));
+          expect(event.changedItems['child3'].addedItems, equals(['name']));
         }));
       });
 
+      //TODO is this necessary?
       test('remove children.', () {
         // given
         var dataObj = new Data.from({'child1': new Data(), 'child2': new Data(), 'child3': new Data()});
@@ -590,8 +579,7 @@ void main() {
         future.then((_) {
           onChange.getLogs().verify(happenedOnce);
         });
-      });
-      
+      });     
       
       test('when child is removed, changed and re-added.', () {
         Data child = new Data(), dataObj = new Data.from({'child': child});
@@ -615,6 +603,27 @@ void main() {
           expect(event.changedItems.length, equals(1));
         }));
       });
+      
+      //TODO
+      /*
+      test('when child Data is removed, changed and then added, only change is propagated.', () {
+        // given
+        var child = new Data();
+        var dataObj = new Data.from({'child': child});
+        var onChange = new Mock();
+
+        // when
+        dataObj.remove('child');
+        child['name'] = 'John Doe';
+        dataObj.add('child', child);
+
+        // then
+        dataObj.onChange.listen(expectAsync1((ChangeSet event) {
+          expect(event.changedItems['child'].addedItems, equals(['name']));
+        }));
+      });
+      */
+      
     });
     
     group('DataReference', () {
@@ -677,6 +686,61 @@ void main() {
         //then
         expect(ref1, equals(ref2));
       });
+
+    });
+
+    group('(Nested DataList)', () {
+        test('listens to changes of its children.', () {
+          // given
+          var dataObj = new Data.from({'child': new DataList()});
+
+          // when
+          dataObj['child'].add('John Doe');
+
+          // then
+          dataObj.onChange.listen(expectAsync1((ChangeSet event) {
+            expect(event.changedItems['child'].addedItems, equals([0]));
+          }));
+        });
+
+        test('do not listen to removed children changes.', () {
+          // given
+          var child = new DataList();
+          var dataObj = new Data.from({'child': child});
+          var onChange = new Mock();
+
+          // when
+          dataObj.remove('child');
+          var future = new Future.delayed(new Duration(milliseconds: 20), () {
+            dataObj.onChangeSync.listen((e) => onChange(e));
+            child.add('John Doe');
+          });
+
+          // then
+          future.then((_) {
+            onChange.getLogs().verify(neverHappened);
+          });
+        });
+
+        test('do not listen to changed children changes.', () {
+          // given
+          var childOld = new DataList();
+          var childNew = new DataList();
+          var dataObj = new Data.from({'child': childOld});
+          var onChange = new Mock();
+
+          // when
+          dataObj['child'] = childNew;
+          var future = new Future.delayed(new Duration(milliseconds: 20), () {
+            dataObj.onChangeSync.listen((e) => onChange(e));
+            childOld.add('John Doe');
+          });
+
+          // then
+          future.then((_) {
+            onChange.getLogs().verify(neverHappened);
+          });
+       });
     });
   });
 }

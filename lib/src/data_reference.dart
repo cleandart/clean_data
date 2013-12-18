@@ -29,6 +29,12 @@ class DataReference extends Object with ChangeNotificationsMixin {
     _notify(single: 'value');
   }
   
+  changeValue(newValue, {author: null}) {
+    _markChanged('value', new Change(_value, newValue));
+    _value = newValue;
+    _notify(single: 'value', author: author);
+  }
+  
   /**
    * Creates new DataReference with [_value]
    */

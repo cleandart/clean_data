@@ -99,6 +99,7 @@ class Data extends DataView with DataChangeListenersMixin<String> implements Map
       dataObj[key] = data[key];
     }
     dataObj._clearChanges();
+    //TODO should be also _clearChangesSync?
     return dataObj;
   }
 
@@ -122,7 +123,7 @@ class Data extends DataView with DataChangeListenersMixin<String> implements Map
       
       if (_fields.containsKey(key)) {
         if(_fields[key] is DataReference && value is DataReference) {
-          _fields[key].value = value.value;
+          _fields[key].changeValue(value.value, author: author);
         }
         else {
           _markChanged(key, new Change(_fields[key], value));

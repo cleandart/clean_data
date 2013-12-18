@@ -253,7 +253,6 @@ class DataCollection extends DataCollectionView with DataChangeListenersMixin<Da
    * was already in the collection, [false] is returned and
    * nothing happens.
    */
-
   bool add(DataView dataObj, {author: null}) {
     var res = !_data.contains(dataObj);
     this._addAll([dataObj], author: author);
