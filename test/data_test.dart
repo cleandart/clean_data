@@ -418,7 +418,7 @@ void main() {
     });
 
     group('(DataReference)', () {
-      test('change value of datareference with map interface.', () {
+      test('change value with map interface.', () {
         // given
         var data = new Data.from({'name': 'oldName'});
         var ref = data.ref('name');
@@ -486,7 +486,7 @@ void main() {
         });
 
         // then
-        future.then((_) {
+        return future.then((_) {
           onChange.getLogs().verify(neverHappened);
         });
       });
@@ -515,6 +515,29 @@ void main() {
           expect(change1.oldValue, equals('John Doe'));
           expect(change1.newValue, equals('Somerset'));
         });
+      });
+
+      test('passing same datareference multiple times.', () {
+        // given
+        var dataRef = new DataReference('John Doe');
+        var dataMap = new Data.from({'ref1':dataRef, 'ref2':dataRef});
+        var mapListener = new Mock();
+
+        // when
+        dataRef.value = 'Somerset';
+
+        // then
+        dataMap.onChange.listen(expectAsync1((ChangeSet event) {
+          expect(event.changedItems.keys, unorderedEquals(['ref1', 'ref2']));
+
+          Change change1 = event.changedItems['ref1'];
+          expect(change1.oldValue, equals('John Doe'));
+          expect(change1.newValue, equals('Somerset'));
+
+          Change change2 = event.changedItems['ref2'];
+          expect(change2.oldValue, equals('John Doe'));
+          expect(change2.newValue, equals('Somerset'));
+        }));
       });
     });
 
@@ -728,7 +751,7 @@ void main() {
       */
 
     });
-
+/*
     group('(Nested DataList)', () {
         test('listens to changes of its children.', () {
           // given
@@ -781,6 +804,6 @@ void main() {
             onChange.getLogs().verify(neverHappened);
           });
        });
-    });
+    }); */
   });
 }
