@@ -35,6 +35,7 @@ void main() {
       expect(dataList.length, 1);
     });
 
+    /*
     test('is accessed like a list. (T03)', () {
       // given
       DataList dataList = new DataList();
@@ -601,9 +602,9 @@ void main() {
 
         expect(event.addedItems, unorderedEquals([]));
         expect(event.removedItems, unorderedEquals([3,4]));
-      }));
+      })); */
     });
-
+/*
     group('(Implements)', () {
       test('List.clear(). (T27)', () {
         // given
@@ -768,7 +769,9 @@ void main() {
           expect(event.removedItems, unorderedEquals([1,2,3]));
         }));
       });
+
     });
+
 
     //TODO addAll, insertAll, removeRange, removeAll
     group('(DataReference)', () {
@@ -1071,5 +1074,5 @@ void main() {
           });
         });
     });
- });
+ }); */
 }

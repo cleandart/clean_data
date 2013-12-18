@@ -14,7 +14,7 @@ part of clean_dart;
  */
 
 class DataList extends Object
-  with ChangeNotificationsMixin, DataChangeListenersMixin<int>, ListMixin
+  with IterableMixin, ChangeNotificationsMixin, DataChangeListenersMixin<int>
     implements List {
 
   Iterator get iterator => _elements.map((value) => (value is DataReference) ? value.value : value).iterator;
@@ -23,6 +23,14 @@ class DataList extends Object
    * Number of elements in this [DataList].
    */
   int get length => _elements.length;
+
+  /**
+   * Changes the length of this list.
+   * If [newLength] is greater than the current length, entries are initialized to null.
+   */
+  void set length(int newLength){
+
+  }
 
   final List _elements = new List();
 
@@ -165,6 +173,18 @@ class DataList extends Object
   }
 
   /**
+   * Removes the first occurence of value from this list.
+   * Returns true if value was in the list, false otherwise.
+  */
+  bool remove(Object value, {author: null}){
+    int pos = indexOf(value);
+    if(pos >= 0) {
+      removeAt(pos, author: author);
+    }
+    return (pos >= 0);
+  }
+
+  /**
    * Removes the object at position [index] from this list.
    */
   dynamic removeAt(int index, {author: null}){
@@ -247,5 +267,110 @@ class DataList extends Object
       int key = toRemove[i];
       removeAt(key);
     }
+  }
+
+
+  /**
+   * Returns an [Iterable] of the objects in this list in reverse order.
+   */
+  Iterable get reversed{
+    //TODO
+  }
+
+  /**
+   * Returns an [Iterable] that iterates over the objects in the range
+   * [start] inclusive to [end] exclusive.
+   */
+  Iterable getRange(int start, int end){
+    //TODO
+  }
+
+  /**
+   * Overwrites objects of `this` with the objects of [iterable], starting
+   * at position [index] in this list.
+   */
+  void setAll(int index, Iterable iterable, {author: null}){
+    //TODO
+  }
+
+  /**
+   * Returns the last index of [element] in this list.
+   */
+  int lastIndexOf(dynamic element, [int start]){
+    //TODO
+  }
+
+  /**
+   * Returns a new list containing the objects from [start] inclusive to [end]
+   * exclusive.
+   */
+  List sublist(int start, [int end]){
+    //TODO
+  }
+
+  /**
+   * Returns the first index of [element] in this list.
+   */
+  int indexOf(dynamic element, [int start = 0]){
+    //TODO
+  }
+
+  /**
+   * Sorts this list according to the order specified by the [compare] function.
+   */
+  //TODO author (problem with named and positional paramters)
+  void sort([int compare(dynamic a, dynamic b), author=null]){
+    //TODO
+  }
+
+  /**
+   * Sets the objects in the range [start] inclusive to [end] exclusive
+   * to the given [fillValue].
+   */
+  //TODO author
+  void fillRange(int start, int end, [dynamic fillValue, author=null]){
+    //TODO
+  }
+
+  /**
+   * Shuffles the elements of this list randomly.
+   */
+  //TODO author
+  void shuffle([Random random, author=null]){
+    //TODO
+  }
+  /**
+   * Returns an unmodifiable [Map] view of `this`.
+   *
+   * The map uses the indices of this list as keys and the corresponding objects
+   * as values. The `Map.keys` [Iterable] iterates the indices of this list
+   * in numerical order.
+   */
+  Map<int, dynamic> asMap(){
+    //TODO
+  }
+
+  /**
+   * Copies the objects of [iterable], skipping [skipCount] objects first,
+   * into the range [start] inclusive to [end] exclusive of `this`.
+   */
+  //TODO author
+  void setRange(int start, int end, Iterable iterable, [int skipCount = 0, author=null]){
+    //TODO
+  }
+
+  /**
+   * Removes the objects in the range [start] inclusive to [end] exclusive
+   * and replaces them with the contents of the [iterable].
+   */
+  void replaceRange(int start, int end, Iterable iterable, {author: null}){
+    //TODO
+  }
+
+  /**
+   *
+   */
+  void _replaceRange(int start, int end, Iterable iterable){
+
   }
 }
