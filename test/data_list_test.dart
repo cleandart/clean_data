@@ -121,7 +121,7 @@ void main() {
       // given
       DataList dataList = new DataList();
       var mock = new Mock();
-      dataList.onChangeSync.listen((event) => mock.handler(event));
+      dataList.onChangeSync.listen((event) => mock(event));
 
       // when
       dataList.add('element', author: 'John Doe');
@@ -138,7 +138,7 @@ void main() {
       // given
       DataList dataList = new DataList();
       var mock = new Mock();
-      dataList.onChangeSync.listen((event) => mock.handler(event));
+      dataList.onChangeSync.listen((event) => mock(event));
 
       // when
       dataList.add('element1');
@@ -171,7 +171,7 @@ void main() {
       // given
       DataList dataList = new DataList.from(['element1']);
       var mock = new Mock();
-      dataList.onChangeSync.listen((event) => mock.handler(event));
+      dataList.onChangeSync.listen((event) => mock(event));
 
       // when
       dataList.removeAt(0, author: 'John Doe');
@@ -240,7 +240,7 @@ void main() {
       List list = ['element1', 'element2', 'element3'];
       DataList dataList = new DataList();
       var mock = new Mock();
-      dataList.onChangeSync.listen((event) => mock.handler(event));
+      dataList.onChangeSync.listen((event) => mock(event));
 
       // when
       dataList.addAll(list, author: 'John Doe');
@@ -270,7 +270,7 @@ void main() {
       // given
       DataList dataList = new DataList.from(['element1', 'element2', 'element3']);
       var mock = new Mock();
-      dataList.onChangeSync.listen((event) => mock.handler(event));
+      dataList.onChangeSync.listen((event) => mock(event));
 
       // when
       dataList.removeRange(1,3, author: 'John Doe');
@@ -372,7 +372,7 @@ void main() {
       // given
       DataList dataList = new DataList.from(['element1','element2', 'element3']);
       var mock = new Mock();
-      dataList.onChangeSync.listen((event) => mock.handler(event));
+      dataList.onChangeSync.listen((event) => mock(event));
 
       // when
       dataList.insert(1, 'element1.5');
@@ -392,7 +392,7 @@ void main() {
       // given
       DataList dataList = new DataList.from(['element1','element2']);
       var mock = new Mock();
-      dataList.onChangeSync.listen((event) => mock.handler(event));
+      dataList.onChangeSync.listen((event) => mock(event));
 
       // when
       dataList.insertAll(1, ['element1.1', 'element1.25', 'element1.5']);
@@ -467,7 +467,7 @@ void main() {
       // given
       DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
       var mock = new Mock();
-      dataList.onChangeSync.listen((event) => mock.handler(event));
+      dataList.onChangeSync.listen((event) => mock(event));
 
       // when
       dataList.removeAt(1);
@@ -557,169 +557,25 @@ void main() {
       }));
     });
 
-    test(' implements List.clear(). (T27)', () {
-      // given
-      DataList dataList = new DataList.from(['element1','element2', 'element3']);
+    //TODO
+    /*
+    test('when child Data is removed, changed and then added, only change is propagated.', () {
+    // given
+    var child = new Data();
+    var dataObj = new Data.from({'child': child});
+    var onChange = new Mock();
 
-      // when
-      dataList.clear();
+    // when
+    dataObj.remove('child');
+    child['name'] = 'John Doe';
+    dataObj.add('child', child);
 
-      // then
-      expect(new List.from(dataList), unorderedEquals(
-          []));
-
-      dataList.onChange.listen(expectAsync1((ChangeSet event) {
-        expect(event.changedItems.keys, unorderedEquals([]));
-        expect(event.addedItems, unorderedEquals([]));
-        expect(event.removedItems, unorderedEquals([0,1,2]));
-      }));
+    // then
+    dataObj.onChange.listen(expectAsync1((ChangeSet event) {
+    expect(event.changedItems['child'].addedItems, equals(['name']));
+    }));
     });
-
-    /**
-     * Removes all objects from this list that satisfy [test].
      */
-    test(' implements List.removeWhere(). (T36)', () {
-      // given
-      DataList dataList = new DataList.from(['element1','doge', 'doge', 'element4']);
-
-      // when
-      dataList.removeWhere((el) => el == 'doge');
-
-      // then
-      expect(new List.from(dataList), unorderedEquals(
-          ['element1', 'element4']));
-
-      dataList.onChange.listen(expectAsync1((ChangeSet event) {
-        expect(event.changedItems.keys, unorderedEquals([1]));
-
-        Change change1 = event.changedItems[1];
-        expect(change1.oldValue, equals('doge'));
-        expect(change1.newValue, equals('element4'));
-
-        expect(event.addedItems, unorderedEquals([]));
-        expect(event.removedItems, unorderedEquals([2,3]));
-      }));
-    });
-
-    /**
-     * Removes all objects from this list that fail to satisfy [test].
-     */
-    test(' implements List.retainWhere(). (T37)', () {
-      // given
-      DataList dataList = new DataList.from(['kitty','element2', 'element3', 'kitty']);
-
-      // when
-      dataList.retainWhere((el) => el == 'kitty');
-
-      // then
-      expect(new List.from(dataList), unorderedEquals(
-          ['kitty', 'kitty']));
-
-      dataList.onChange.listen(expectAsync1((ChangeSet event) {
-        expect(event.changedItems.keys, unorderedEquals([1]));
-
-        Change change1 = event.changedItems[1];
-        expect(change1.oldValue, equals('element2'));
-        expect(change1.newValue, equals('kitty'));
-
-        expect(event.addedItems, unorderedEquals([]));
-        expect(event.removedItems, unorderedEquals([2,3]));
-      }));
-    });
-
-    /**
-     * Inserts all objects of [iterable] at position [index] in this list.
-     */
-    test(' implements List.insertAll(). (T41)', () {
-      // given
-      DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
-
-      // when
-      dataList.insertAll(1, ['kitty', 'doge']);
-
-      // then
-      expect(new List.from(dataList), unorderedEquals(
-          ['element1', 'kitty', 'doge', 'element2', 'element3', 'element4']));
-
-      dataList.onChange.listen(expectAsync1((ChangeSet event) {
-        expect(event.changedItems.keys, unorderedEquals([1,2,3]));
-
-        Change change1 = event.changedItems[1];
-        expect(change1.oldValue, equals('element2'));
-        expect(change1.newValue, equals('kitty'));
-
-        Change change2 = event.changedItems[2];
-        expect(change2.oldValue, equals('element3'));
-        expect(change2.newValue, equals('doge'));
-
-        Change change3 = event.changedItems[3];
-        expect(change3.oldValue, equals('element4'));
-        expect(change3.newValue, equals('element2'));
-
-
-        expect(event.addedItems, unorderedEquals([4,5]));
-        expect(event.removedItems, unorderedEquals([]));
-      }));
-    });
-
-    test(' implements List.removeLast(). (T43)', () {
-      // given
-      DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
-
-      // when
-      dataList.removeLast();
-
-      // then
-      expect(new List.from(dataList), unorderedEquals(
-          ['element1','element2', 'element3']));
-
-      dataList.onChange.listen(expectAsync1((ChangeSet event) {
-        expect(event.changedItems.keys, unorderedEquals([]));
-        expect(event.addedItems, unorderedEquals([]));
-        expect(event.removedItems, unorderedEquals([3]));
-      }));
-    });
-
-    test(' implements List.removeRange(). (T44)', () {
-      // given
-      DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
-
-      // when
-      dataList.removeRange(1,3);
-
-      // then
-      expect(new List.from(dataList), unorderedEquals(
-          ['element1', 'element4']));
-
-      dataList.onChange.listen(expectAsync1((ChangeSet event) {
-        expect(event.changedItems.keys, unorderedEquals([1]));
-
-        Change change1 = event.changedItems[1];
-        expect(change1.oldValue, equals('element2'));
-        expect(change1.newValue, equals('element4'));
-
-        expect(event.addedItems, unorderedEquals([]));
-        expect(event.removedItems, unorderedEquals([2,3]));
-      }));
-    });
-
-    test(' implements List.removeRange() from end. (T44.5)', () {
-      // given
-      DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
-
-      // when
-      dataList.removeRange(1,4);
-
-      // then
-      expect(new List.from(dataList), unorderedEquals(
-          ['element1']));
-
-      dataList.onChange.listen(expectAsync1((ChangeSet event) {
-        expect(event.changedItems.keys, unorderedEquals([]));
-        expect(event.addedItems, unorderedEquals([]));
-        expect(event.removedItems, unorderedEquals([1,2,3]));
-      }));
-    });
 
     test(' removeAll (T46)', () {
       // given
@@ -748,7 +604,254 @@ void main() {
       }));
     });
 
-    group('(Nested Data)', () {
+    group('(Implements)', () {
+      test('List.clear(). (T27)', () {
+        // given
+        DataList dataList = new DataList.from(['element1','element2', 'element3']);
+
+        // when
+        dataList.clear();
+
+        // then
+        expect(new List.from(dataList), unorderedEquals(
+            []));
+
+        dataList.onChange.listen(expectAsync1((ChangeSet event) {
+          expect(event.changedItems.keys, unorderedEquals([]));
+          expect(event.addedItems, unorderedEquals([]));
+          expect(event.removedItems, unorderedEquals([0,1,2]));
+        }));
+      });
+
+      /**
+       * Removes all objects from this list that satisfy [test].
+       */
+      test('List.removeWhere(). (T36)', () {
+        // given
+        DataList dataList = new DataList.from(['element1','doge', 'doge', 'element4']);
+
+        // when
+        dataList.removeWhere((el) => el == 'doge');
+
+        // then
+        expect(new List.from(dataList), unorderedEquals(
+            ['element1', 'element4']));
+
+        dataList.onChange.listen(expectAsync1((ChangeSet event) {
+          expect(event.changedItems.keys, unorderedEquals([1]));
+
+          Change change1 = event.changedItems[1];
+          expect(change1.oldValue, equals('doge'));
+          expect(change1.newValue, equals('element4'));
+
+          expect(event.addedItems, unorderedEquals([]));
+          expect(event.removedItems, unorderedEquals([2,3]));
+        }));
+      });
+
+      /**
+       * Removes all objects from this list that fail to satisfy [test].
+       */
+      test('List.retainWhere(). (T37)', () {
+        // given
+        DataList dataList = new DataList.from(['kitty','element2', 'element3', 'kitty']);
+
+        // when
+        dataList.retainWhere((el) => el == 'kitty');
+
+        // then
+        expect(new List.from(dataList), unorderedEquals(
+            ['kitty', 'kitty']));
+
+        dataList.onChange.listen(expectAsync1((ChangeSet event) {
+          expect(event.changedItems.keys, unorderedEquals([1]));
+
+          Change change1 = event.changedItems[1];
+          expect(change1.oldValue, equals('element2'));
+          expect(change1.newValue, equals('kitty'));
+
+          expect(event.addedItems, unorderedEquals([]));
+          expect(event.removedItems, unorderedEquals([2,3]));
+        }));
+      });
+
+      /**
+       * Inserts all objects of [iterable] at position [index] in this list.
+       */
+      test('List.insertAll(). (T41)', () {
+        // given
+        DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
+
+        // when
+        dataList.insertAll(1, ['kitty', 'doge']);
+
+        // then
+        expect(new List.from(dataList), unorderedEquals(
+            ['element1', 'kitty', 'doge', 'element2', 'element3', 'element4']));
+
+        dataList.onChange.listen(expectAsync1((ChangeSet event) {
+          expect(event.changedItems.keys, unorderedEquals([1,2,3]));
+
+          Change change1 = event.changedItems[1];
+          expect(change1.oldValue, equals('element2'));
+          expect(change1.newValue, equals('kitty'));
+
+          Change change2 = event.changedItems[2];
+          expect(change2.oldValue, equals('element3'));
+          expect(change2.newValue, equals('doge'));
+
+          Change change3 = event.changedItems[3];
+          expect(change3.oldValue, equals('element4'));
+          expect(change3.newValue, equals('element2'));
+
+
+          expect(event.addedItems, unorderedEquals([4,5]));
+          expect(event.removedItems, unorderedEquals([]));
+        }));
+      });
+
+      test('List.removeLast(). (T43)', () {
+        // given
+        DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
+
+        // when
+        dataList.removeLast();
+
+        // then
+        expect(new List.from(dataList), unorderedEquals(
+            ['element1','element2', 'element3']));
+
+        dataList.onChange.listen(expectAsync1((ChangeSet event) {
+          expect(event.changedItems.keys, unorderedEquals([]));
+          expect(event.addedItems, unorderedEquals([]));
+          expect(event.removedItems, unorderedEquals([3]));
+        }));
+      });
+
+      test('List.removeRange(). (T44)', () {
+        // given
+        DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
+
+        // when
+        dataList.removeRange(1,3);
+
+        // then
+        expect(new List.from(dataList), unorderedEquals(
+            ['element1', 'element4']));
+
+        dataList.onChange.listen(expectAsync1((ChangeSet event) {
+          expect(event.changedItems.keys, unorderedEquals([1]));
+
+          Change change1 = event.changedItems[1];
+          expect(change1.oldValue, equals('element2'));
+          expect(change1.newValue, equals('element4'));
+
+          expect(event.addedItems, unorderedEquals([]));
+          expect(event.removedItems, unorderedEquals([2,3]));
+        }));
+      });
+
+      test('List.removeRange() from end. (T44.5)', () {
+        // given
+        DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
+
+        // when
+        dataList.removeRange(1,4);
+
+        // then
+        expect(new List.from(dataList), unorderedEquals(
+            ['element1']));
+
+        dataList.onChange.listen(expectAsync1((ChangeSet event) {
+          expect(event.changedItems.keys, unorderedEquals([]));
+          expect(event.addedItems, unorderedEquals([]));
+          expect(event.removedItems, unorderedEquals([1,2,3]));
+        }));
+      });
+    });
+
+    //TODO addAll, insertAll, removeRange, removeAll
+    group('(DataReference)', () {
+      test('change value of datareference with list interface.', () {
+        // given
+        DataList dataList = new DataList.from(['oldName']);
+        var ref = dataList.ref(0);
+        var onChange = new Mock();
+        dataList.onChangeSync.listen((event) => onChange(event));
+
+        // when
+        dataList[0] = 'newName';
+
+        // then
+        expect(dataList[0], equals('newName'));
+
+        onChange.getLogs().verify(happenedExactly(1));
+        var change = onChange.getLogs().logs.first.args.first['change'];
+        expect(change.changedItems.keys, unorderedEquals([0]));
+        expect(change.changedItems[0].oldValue, equals('oldName'));
+        expect(change.changedItems[0].newValue, equals('newName'));
+
+        dataList.onChange.listen(expectAsync1((ChangeSet event) {
+          expect(event.changedItems[0].oldValue, equals('oldName'));
+          expect(event.changedItems[0].newValue, equals('newName'));
+        }));
+      });
+
+      test('reference changes, when ChangeNotificationsMixin is assigned.', () {
+        //given
+        DataList dataList = new DataList.from(['John Doe String']);
+        var name = new Data.from({'first': 'John', 'second': 'Doe'});
+
+        //when
+        var ref1 = dataList.ref(0);
+        dataList[0] = name;
+
+        //then
+        expect(() => dataList.ref(0), throws);
+      });
+
+     test('reference does not change when another primitive is assigned.', () {
+        //given
+        DataList dataList = new DataList.from(['oldValue']);
+        var ref1 = data.ref(0);
+
+        //when
+        dataList[0] = 'newValue';
+        var ref2 = data.ref(0);
+        ref1.value = 500;
+
+        //then
+        expect(ref1, equals(ref2));
+      });
+
+      test('passing data reference.', () {
+        //given
+        var dataRef = new DataReference('John Doe');
+        var dataList = new DataList.from([dataRef]);
+        var listener = new Mock();
+
+        //when
+        var future = new Future.delayed(new Duration(milliseconds: 20), () {
+          dataList.onChangeSync.listen((e) => listener(e));
+          dataRef.value = 'Somerset';
+        });
+
+        // then
+        return future.then((_) {
+          listener.getLogs().verify(happenedOnce);
+          var changes = listener.getLogs().logs.first.args.first['change'];
+
+          //because of single
+          expect(changes.changedItems[0], new isInstanceOf<Change>());
+
+          Change change1 = changes.changedItems[0];
+          expect(change1.oldValue, equals('John Doe'));
+          expect(change1.newValue, equals('Somerset'));
+        });
+      });
+    });
+
+    group('(Nested DataMap)', () {
       test('listens to changes of its children.', () {
         // given
         DataList dataList = new DataList.from([new Data(), new Data()]);

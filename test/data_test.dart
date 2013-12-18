@@ -91,7 +91,7 @@ void main() {
       var keysToRemove = ['key1', 'key2'];
       var dataObj = new Data.from(data);
       var mock = new Mock();
-      dataObj.onChangeSync.listen((event) => mock.handler(event));
+      dataObj.onChangeSync.listen((event) => mock(event));
 
       // when
       dataObj.removeAll(keysToRemove, author: 'John Doe');
@@ -118,7 +118,7 @@ void main() {
       var data = {'key1': 'value1', 'key2': 'value2', 'key3': 'value3'};
       var dataObj = new Data();
       var mock = new Mock();
-      dataObj.onChangeSync.listen((event) => mock.handler(event));
+      dataObj.onChangeSync.listen((event) => mock(event));
 
       // when
       dataObj.addAll(data, author: 'John Doe');
@@ -163,7 +163,7 @@ void main() {
       // given
       var dataObj = new Data();
       var mock = new Mock();
-      dataObj.onChangeSync.listen((event) => mock.handler(event));
+      dataObj.onChangeSync.listen((event) => mock(event));
 
       // when
       dataObj.add('key', 'value', author: 'John Doe');
@@ -180,7 +180,7 @@ void main() {
       // given
       var dataObj = new Data();
       var mock = new Mock();
-      dataObj.onChangeSync.listen((event) => mock.handler(event));
+      dataObj.onChangeSync.listen((event) => mock(event));
 
       // when
       dataObj['key1'] = 'value1';
@@ -215,7 +215,7 @@ void main() {
       // given
       var dataObj = new Data.from({'key': 'value'});
       var mock = new Mock();
-      dataObj.onChangeSync.listen((event) => mock.handler(event));
+      dataObj.onChangeSync.listen((event) => mock(event));
 
       // when
       dataObj.remove('key', author: 'John Doe');
@@ -350,69 +350,172 @@ void main() {
       dataObj.onChange.listen(protectAsync1((e) => expect(true, isFalse)));
      });
 
-    test('Data implements map.clear(). (T20)', () {
-      // given
-      var data = {'key1': 'value1', 'key2': 'value2'};
-      var dataObj = new Data.from(data);
-      var mock = new Mock();
-      dataObj.onChangeSync.listen((event) => mock.handler(event));
+    group('(Implements)', () {
+      test('Map.clear(). (T20)', () {
+        // given
+        var data = {'key1': 'value1', 'key2': 'value2'};
+        var dataObj = new Data.from(data);
+        var mock = new Mock();
+        dataObj.onChangeSync.listen((event) => mock(event));
 
-      // when
-      dataObj.clear(author: 'John Doe');
+        // when
+        dataObj.clear(author: 'John Doe');
 
-      // then
-      mock.getLogs().verify(happenedOnce);
-      var event = mock.getLogs().first.args[0];
-      expect(event['author'], equals('John Doe'));
-      expect(dataObj.isEmpty, isTrue);
-      dataObj.onChange.listen(expectAsync1((ChangeSet event) {
-        expect(event.removedItems, unorderedEquals(['key1', 'key2']));
-      }));
+        // then
+        mock.getLogs().verify(happenedOnce);
+        var event = mock.getLogs().first.args[0];
+        expect(event['author'], equals('John Doe'));
+        expect(dataObj.isEmpty, isTrue);
+        dataObj.onChange.listen(expectAsync1((ChangeSet event) {
+          expect(event.removedItems, unorderedEquals(['key1', 'key2']));
+        }));
 
-    });
-
-    test('Data implements map.containsValue(). (T21)', () {
-      // given
-      var data = {'key1': 'value1', 'key2': 'value2'};
-
-      // when
-      var dataObj = new Data.from(data);
-
-      // then
-      expect(dataObj.containsValue('value1'), isTrue);
-      expect(dataObj.containsValue('notInValues'), isFalse);
-    });
-
-    test('Data implements map.forEach(). (T22)', () {
-      // given
-      var data = {'key1': 'value1', 'key2': 'value2'};
-      var dataObj = new Data.from(data);
-      var dataCopy = new Data();
-
-      // when
-      dataObj.forEach((key, value) {
-        dataCopy[key] = value;
       });
 
-      // then
-      expect(dataCopy, equals(data));
+      test('Map.containsValue(). (T21)', () {
+        // given
+        var data = {'key1': 'value1', 'key2': 'value2'};
+
+        // when
+        var dataObj = new Data.from(data);
+
+        // then
+        expect(dataObj.containsValue('value1'), isTrue);
+        expect(dataObj.containsValue('notInValues'), isFalse);
+      });
+
+      test('Map.forEach(). (T22)', () {
+        // given
+        var data = {'key1': 'value1', 'key2': 'value2'};
+        var dataObj = new Data.from(data);
+        var dataCopy = new Data();
+
+        // when
+        dataObj.forEach((key, value) {
+          dataCopy[key] = value;
+        });
+
+        // then
+        expect(dataCopy, equals(data));
+      });
+
+      test('Map.putIfAbsent(). (T23)', () {
+        // given
+        Map<String, int> data = {'key1': "value1"};
+        var dataObj = new Data.from(data);
+
+        // when
+          dataObj.putIfAbsent('key1', () => '');
+          dataObj.putIfAbsent('key2', () => '');
+
+        // then
+        expect(dataObj['key1'], equals('value1'));
+        expect(dataObj['key2'], equals(''));
+        dataObj.onChange.listen(expectAsync1((ChangeSet event) {
+          expect(event.addedItems,unorderedEquals(['key2']));
+        }));
+      });
     });
 
-    test('Data implements map.putIfAbsent(). (T23)', () {
-      // given
-      Map<String, int> data = {'key1': "value1"};
-      var dataObj = new Data.from(data);
+    group('(DataReference)', () {
+      test('change value of datareference with map interface.', () {
+        // given
+        var data = new Data.from({'name': 'oldName'});
+        var ref = data.ref('name');
+        var onChange = new Mock();
+        data.onChangeSync.listen((event) => onChange(event));
 
-      // when
-        dataObj.putIfAbsent('key1', () => '');
-        dataObj.putIfAbsent('key2', () => '');
+        // when
+        data['name'] = 'newName';
 
-      // then
-      expect(dataObj['key1'], equals('value1'));
-      expect(dataObj['key2'], equals(''));
-      dataObj.onChange.listen(expectAsync1((ChangeSet event) {
-        expect(event.addedItems,unorderedEquals(['key2']));
-      }));
+        // then
+        expect(data['name'], equals('newName'));
+
+        onChange.getLogs().verify(happenedExactly(1));
+        var change = onChange.getLogs().logs.first.args.first['change'];
+        expect(change.changedItems.keys, unorderedEquals(['name']));
+        expect(change.changedItems['name'].oldValue, equals('oldName'));
+        expect(change.changedItems['name'].newValue, equals('newName'));
+
+        data.onChange.listen(expectAsync1((ChangeSet event) {
+          expect(event.changedItems['name'].oldValue, equals('oldName'));
+          expect(event.changedItems['name'].newValue, equals('newName'));
+        }));
+      });
+
+      test('reference changes, when ChangeNotificationsMixin is assigned.', () {
+        // given
+        var data = new Data();
+        data['name'] = 'John';
+        var name = new Data.from({'first': 'John', 'second': 'Doe'});
+
+        // when
+        var ref1 = data.ref('name');
+        data['name'] = name;
+
+        // then
+        expect(() => data.ref('name'), throws);
+      });
+
+      test('reference does not change when another primitive is assigned.', () {
+        // given
+        var data = new Data();
+        data['name'] = 'John';
+
+        // when
+        var ref1 = data.ref('name');
+        data['name'] = 300;
+        var ref2 = data.ref('name');
+        ref1.value = 500;
+
+        // then
+        expect(ref1, equals(ref2));
+      });
+
+      test('do not listen after removal.', () {
+        // given
+        var data = new Data.from({'name':'John Doe'});
+        var ref = data.ref('name');
+        var onChange = new Mock();
+
+        // when
+        data.remove('name');
+        var future = new Future.delayed(new Duration(milliseconds: 20), () {
+          data.onChangeSync.listen((e) => onChange(e));
+          ref.value = 'Somerset';
+        });
+
+        // then
+        future.then((_) {
+          onChange.getLogs().verify(neverHappened);
+        });
+      });
+
+      test('passing data reference.', () {
+        // given
+        var dataRef = new DataReference('John Doe');
+        var dataMap = new Data.from({'ref':dataRef});
+        var mapListener = new Mock();
+
+        // when
+        var future = new Future.delayed(new Duration(milliseconds: 20), () {
+          dataMap.onChangeSync.listen((e) => mapListener(e));
+          dataRef.value = 'Somerset';
+        });
+
+        // then
+        return future.then((_) {
+          mapListener.getLogs().verify(happenedOnce);
+          var changes = mapListener.getLogs().logs.first.args.first['change'];
+
+          //because of single
+          expect(changes.changedItems['ref'], new isInstanceOf<Change>());
+
+          Change change1 = changes.changedItems['ref'];
+          expect(change1.oldValue, equals('John Doe'));
+          expect(change1.newValue, equals('Somerset'));
+        });
+      });
     });
 
     group('(Nested Data)', () {
@@ -503,7 +606,7 @@ void main() {
         var dataObj = new Data.from({'child1': new Data(), 'child2': new Data(), 'child3': new Data()});
         List keysToRemove = ['child1', 'child2'];
         var mock = new Mock();
-        dataObj.onChangeSync.listen((event) => mock.handler(event));
+        dataObj.onChangeSync.listen((event) => mock(event));
 
         // when
         dataObj.removeAll(keysToRemove, author: 'John Doe');
@@ -624,79 +727,6 @@ void main() {
       });
       */
 
-    });
-
-    group('DataReference', () {
-      test('change value of datareference with map interface.', () {
-        var data = new Data.from({'name': 'name'});
-        var ref = data.ref('name');
-
-        ref.onChangeSync.listen(expectAsync1((_) {
-          expect(ref.value, 'newName');
-        }));
-
-        data.onChange.listen(expectAsync1((ChangeSet event) {
-          expect(event.changedItems['name'].newValue, equals('newName'));
-          expect(event.changedItems['name'].oldValue, equals('name'));
-        }));
-
-        data['name'] = 'newName';
-        expect(data['name'], equals('newName'));
-      });
-
-      test('reference changes, when ChangeNotificationsMixin is assigned.', () {
-        //given
-        var data = new Data();
-        data['name'] = 'John';
-        var name = new Data.from({'first': 'John', 'second': 'Doe'});
-
-        //when
-        var ref1 = data.ref('name');
-        data['name'] = name;
-
-        //then
-        expect(() => data.ref('name'), throws);
-      });
-
-     test('reference does not change when another primitive is assigned.', () {
-        //given
-        var data = new Data();
-        data['name'] = 'John';
-        var name = new Data.from({'first': 'John', 'second': 'Doe'});
-        //when
-        var ref1 = data.ref('name');
-        data['name'] = 300;
-        var ref2 = data.ref('name');
-        ref1.value = 500;
-        //then
-        expect(ref1, equals(ref2));
-      });
-
-      test('passing data reference.', () {
-        //given
-        var dataRef = new DataReference('John Doe');
-        var dataMap = new Data.from({'ref':dataRef});
-        var mapListener = new Mock();
-
-        //when
-        var future = new Future.delayed(new Duration(milliseconds: 20), () {
-          dataMap.onChangeSync.listen((e) => mapListener(e));
-          dataRef.value = 'Somerset';
-        });
-
-        // then
-        return future.then((_) {
-          mapListener.getLogs().verify(happenedOnce);
-          var changes = mapListener.getLogs().logs.first.args.first['change'];
-
-          //because of single
-          expect(changes.changedItems['ref'], new isInstanceOf<Change>());
-
-          Change change1 = changes.changedItems['ref'];
-          expect(change1.oldValue, equals('John Doe'));
-          expect(change1.newValue, equals('Somerset'));
-        });
-      });
     });
 
     group('(Nested DataList)', () {
