@@ -42,13 +42,47 @@ class DataList extends Object
     return result;
   }
 
-  dynamic operator[](index) => (_elements[index] is DataReference) ? _elements[index].value : _elements[index];
-  
+  bool _checkRange(int start, int end){
+    if(end < start || start < 0 || _elements.length < end){
+      throw new ArgumentError("Incorrect range [$start, $end) for DataList of size ${_elements.length}");
+    }
+    return true;
+  }
+
+  /**
+   * Return [DataReference] for key. If DataList[key] is not [DataReference]
+   * expection is thrown.
+   */
+  DataReference ref(int index) {
+    if(_elements[index] is!  DataReference) {
+      throw new Exception("'$index' is not primitive data type.");
+    }{
+      return _elements[index];
+    }
+  }
+
+  dynamic operator[](index) {
+    if(_elements[index] is DataReference) {
+      return _elements[index].value;
+    }
+    else {
+      _elements[index];
+    }
+  }
+
   void operator []=(int index, dynamic value){
-    if(index >= length) throw new RangeError('Out of range(DataList).');
+    if(index >= length) {
+      throw new RangeError('Index $index out of range(DataList length=$length).');
+    }
+
     _markChanged(index, new Change(_elements[index], value));
-    if(_elements[index] is DataReference) _elements[index].value = value;
-    else _elements[index] = value;
+
+    if(_elements[index] is DataReference) {
+      _elements[index].value = value;
+    }
+    else {
+      _elements[index] = value;
+    }
     _notify();
   }
 
@@ -65,11 +99,11 @@ class DataList extends Object
   void addAll(Iterable other, {author: null}) {
     other.forEach((element) {
       int key = _elements.length;
-      
+
       if(element is! ChangeNotificationsMixin) {
         element = new DataReference(element);
       }
-      
+
       _markChanged(key, new Change(null, element));
       _markAdded(key);
 
@@ -82,67 +116,10 @@ class DataList extends Object
   }
 
   /**
-   * Removes element with [index] from the data object.
+   * Inserts the object at position [index] in this list.
    */
-  /*bool*/ remove(int index, {author: null}) {
-    return removeAt(index, author:author);
-  }
-
-  void clear({author: null}) {
-    removeRange(0, _elements.length, author:author);
-  }
-
-  bool _checkRange(int start, int end){
-    if(end < start || start < 0 || _elements.length < end){
-      throw new ArgumentError("Incorrect range [$start, $end) for DataList of size ${_elements.length}");
-    }
-    return true;
-  }
-
-  /**
-   * Removes the object at position [index] from this list.
-   */
-  dynamic removeAt(int index, {author: null}){
-    dynamic result = _elements[index];
-    removeRange(index, index+1, author: author);
-    return result;
-  }
-
-  /**
-   * Removes all objects from this list that satisfy [test].
-   */
-  void removeWhere(bool test(dynamic element), {author: null}){
-    List toRemove = [];
-    for(int key=0; key<_elements.length ; key++){
-        if(test((_elements[key] is DataReference) ? _elements[key].value : _elements[key])) toRemove.add(key);
-    };
-    removeAll(toRemove, author: author);
-  }
-
-  /**
-   * Removes all objects from this list that fail to satisfy [test].
-   */
-  void retainWhere(bool test(dynamic element), {author: null}){
-    List toRemove = [];
-    for(int key=0; key<_elements.length ; key++){
-        if(!test( (_elements[key] is DataReference) ? _elements[key].value : _elements[key] )) toRemove.add(key);
-    };
-    removeAll(toRemove, author: author);
-  }
-
-  void removeAll(Iterable indexes, {author: null}){
-    List toRemove = new List.from(indexes, growable: false);
-    toRemove.sort();
-
-    for(int i=toRemove.length-1; i>=0; i--){
-      int key = toRemove[i];
-
-      if(_elements[key] is ChangeNotificationsMixin){
-        _removeOnDataChangeListener(key);
-      }
-
-      removeAt(key);
-    }
+  void insert(int index, dynamic element, {author: null}){
+    insertAll(index, [element], author: author);
   }
 
   /**
@@ -176,11 +153,17 @@ class DataList extends Object
     _notify(author: author);
   }
 
+  void clear({author: null}) {
+    removeRange(0, _elements.length, author:author);
+  }
+
   /**
-   * Inserts the object at position [index] in this list.
+   * Removes the object at position [index] from this list.
    */
-  void insert(int index, dynamic element, {author: null}){
-    insertAll(index, [element], author: author);
+  dynamic removeAt(int index, {author: null}){
+    dynamic result = _elements[index];
+    removeRange(index, index+1, author: author);
+    return result;
   }
 
   /**
@@ -223,5 +206,42 @@ class DataList extends Object
     _elements.removeRange(start, end);
 
     _notify(author: author);
+  }
+
+  /**
+   * Removes all objects from this list that satisfy [test].
+   */
+  void removeWhere(bool test(dynamic element), {author: null}){
+    List toRemove = [];
+    for(int key=0; key<_elements.length ; key++){
+        if(test((_elements[key] is DataReference) ? _elements[key].value : _elements[key])) toRemove.add(key);
+    };
+    removeAll(toRemove, author: author);
+  }
+
+  /**
+   * Removes all objects from this list that fail to satisfy [test].
+   */
+  void retainWhere(bool test(dynamic element), {author: null}){
+    List toRemove = [];
+    for(int key=0; key<_elements.length ; key++){
+        if(!test( (_elements[key] is DataReference) ? _elements[key].value : _elements[key] )) toRemove.add(key);
+    };
+    removeAll(toRemove, author: author);
+  }
+
+  void removeAll(Iterable indexes, {author: null}){
+    List toRemove = new List.from(indexes, growable: false);
+    toRemove.sort();
+
+    for(int i=toRemove.length-1; i>=0; i--){
+      int key = toRemove[i];
+
+      if(_elements[key] is ChangeNotificationsMixin){
+        _removeOnDataChangeListener(key);
+      }
+
+      removeAt(key);
+    }
   }
 }
