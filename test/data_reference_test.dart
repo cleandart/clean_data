@@ -18,45 +18,45 @@ void main() {
       DataReference ref = new DataReference('value');
       expect(ref.value, 'value');
     });
-    
+
     test('Setter (T02)', () {
       DataReference ref = new DataReference('value');
       ref.value = 'newValue';
       expect(ref.value, 'newValue');
     });
-    
-    
+
+
     test('Listen on change (T03)', () {
       DataReference ref = new DataReference('oldValue');
-      
+
       ref.onChange.listen(expectAsync1((Change event) {
         expect(event.oldValue , equals('oldValue'));
         expect(event.newValue , equals('newValue'));
       }));
-      
+
       ref.value = 'newValue';
     });
-    
+
     test('Listen on changeSync(T04)', () {
       DataReference ref = new DataReference('oldValue');
-      
+
       ref.onChangeSync.listen(expectAsync1((event) {
         expect(event['change'].oldValue , equals('oldValue'));
         expect(event['change'].newValue , equals('newValue'));
       }));
-      
+
       ref.value = 'newValue';
     });
-    
+
     test('Listen on changeSync with Author(T05)', () {
       DataReference ref = new DataReference('oldValue');
-      
+
       ref.onChangeSync.listen(expectAsync1((event) {
         expect(event['change'].oldValue , equals('oldValue'));
         expect(event['change'].newValue , equals('newValue'));
         expect(event['author'], equals('VacuumLabs'));
       }));
-      
+
       ref.changeValue('newValue', author: 'VacuumLabs');
     });
   });

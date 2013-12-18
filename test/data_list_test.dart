@@ -785,7 +785,7 @@ void main() {
         }));
       });*/
 
-      test('do not listen to removed children changes.', () {
+      test('do not listen to removedAt children changes.', () {
         // given
         var child = new Data();
         DataList dataList = new DataList.from([child]);
@@ -824,23 +824,23 @@ void main() {
         });
       });
 
-      test('do not listen after remove multiple children with removeRange.', () {
+      test('do not listen after removeAll multiple children with removeRange.', () {
         // given
         var child1 = new Data();
-        var child2 = new Data();
-        DataList dataList = new DataList.from([new Data(), child1, child2]);
+        var child3 = new Data();
+        DataList dataList = new DataList.from([new Data(), child1, new Data(), child3, new Data()]);
         var onRemove = new Mock();
         var onChange = new Mock();
         dataList.onChangeSync.listen((event) => onRemove.handler(event));
 
         // when
-        dataList.removeRange(1,3, author: 'John Doe');
+        dataList.removeAll([1,3], author: 'John Doe');
 
         // then
         var future = new Future.delayed(new Duration(milliseconds: 20), () {
           dataList.onChangeSync.listen((e) => onChange(e));
           child1['name'] = 'John Doe';
-          child2['name'] = 'Mills';
+          child3['name'] = 'Mills';
         });
 
         future.then((_) {
@@ -849,7 +849,7 @@ void main() {
 
         // but async onChange drops information about changes in removed items.
         dataList.onChange.listen(expectAsync1((changeSet) {
-          expect(changeSet.removedItems, unorderedEquals([1,2]));
+          expect(changeSet.removedItems, unorderedEquals([1,3]));
           expect(changeSet.addedItems.isEmpty, isTrue);
           expect(changeSet.changedItems.isEmpty, isTrue);
         }));
@@ -911,7 +911,7 @@ void main() {
         return future.then((_) {
           onChange.getLogs().verify(happenedOnce);
         });
-      }); 
+      });
     });
 
     //Testing only part of functionality

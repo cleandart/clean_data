@@ -327,7 +327,6 @@ class DataCollection extends DataCollectionView with DataChangeListenersMixin<Da
     _removeWhere(test, author:author);
   }
 
-
   DataView lookup(Object object) => _data.lookup(object);
 
   bool containsAll(Iterable<DataView> other) => _data.containsAll(other);

@@ -2,10 +2,16 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+//TODO consider methods for ChangeNotificationsMixin & DataChangeListener
+//  manageSubscriptionsOnChange(key, old, new)
+//  manageSubscriptionsOnAdd(key, new)
+//  manageSubscriptionsOnRemove(key)
+//which will depending on DataRef / DataCollection manage subscriptions
+// -> Maybe it could be moved to _markChanged / _markAdded / _markRemoved
+
 part of clean_data;
 
 //TODO consider moving mixin to separate file
-
 abstract class DataView extends Object with ChangeNotificationsMixin {
 
   final Map _fields = new Map();
@@ -112,7 +118,7 @@ class Data extends DataView with DataChangeListenersMixin<String> implements Map
 
   /**
    * Adds all key-value pairs of [other] to this data.
-   * If value doesn't mixin ChangeNotificationMixin a new [DataReference] is 
+   * If value doesn't mixin ChangeNotificationMixin a new [DataReference] is
    * created for this value.
    */
   void addAll(Map other, {author: null}) {
@@ -120,20 +126,20 @@ class Data extends DataView with DataChangeListenersMixin<String> implements Map
       if(value is! ChangeNotificationsMixin) {
         value = new DataReference(value);
       }
-      
+
       if (_fields.containsKey(key)) {
         if(_fields[key] is DataReference && value is DataReference) {
           _fields[key].changeValue(value.value, author: author);
         }
         else {
           _markChanged(key, new Change(_fields[key], value));
-          _removeOnDataChangeListener(key);          
+          _removeOnDataChangeListener(key);
           _addOnDataChangeListener(key, value);
           _fields[key] = value;
         }
       } else {
         _markChanged(key, new Change(null, value));
-        _markAdded(key);        
+        _markAdded(key);
         _addOnDataChangeListener(key, value);
         _fields[key] = value;
       }
@@ -147,16 +153,16 @@ class Data extends DataView with DataChangeListenersMixin<String> implements Map
   void operator[]=(String key, value) {
     add(key, value);
   }
-  
+
   /**
-   * Return [DataReference] for key. If Data[key] is not [DataReference] 
+   * Return [DataReference] for key. If Data[key] is not [DataReference]
    * expection is thrown.
    */
   DataReference ref(String key) {
     if(_fields[key] is!  DataReference) throw new Exception("'$key' is not primitive data type.");
     return _fields[key];
   }
-  
+
   /**
    * Removes [key] from the data object.
    */
