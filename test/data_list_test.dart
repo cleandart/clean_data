@@ -772,7 +772,7 @@ void main() {
 
     //TODO addAll, insertAll, removeRange, removeAll
     group('(DataReference)', () {
-      test('change value of datareference with list interface.', () {
+      test('change value with list interface.', () {
         // given
         DataList dataList = new DataList.from(['oldName']);
         var ref = dataList.ref(0);
@@ -797,7 +797,7 @@ void main() {
         }));
       });
 
-      test('reference changes, when ChangeNotificationsMixin is assigned.', () {
+      test('reference removed when ChangeNotificationsMixin is assigned.', () {
         //given
         DataList dataList = new DataList.from(['John Doe String']);
         var name = new Data.from({'first': 'John', 'second': 'Doe'});

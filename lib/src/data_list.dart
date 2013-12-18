@@ -75,13 +75,18 @@ class DataList extends Object
       throw new RangeError('Index $index out of range(DataList length=$length).');
     }
 
-    _markChanged(index, new Change(_elements[index], value));
+    if(value is! ChangeNotificationsMixin){
+      value = new DataReference(value);
+    }
+
+    _smartUpdateOnDataChangeListener(index, value);
 
     if(_elements[index] is DataReference) {
-      _elements[index].value = value;
+      _elements[index].value = value; //fires change
     }
     else {
       _elements[index] = value;
+      _markChanged(index, new Change(_elements[index], value));
     }
     _notify();
   }
@@ -132,20 +137,22 @@ class DataList extends Object
     // Changed keys for iterable [index, index + iterable.length)
     for(int key=index ; key<index+iterable.length ; key++){
       var added = other[key-index];
-      _markChanged(key, new Change((key>=_elements.length) ? null:_elements[key], added));
-
-      //TODO refactor this test to _addOnData...blah,blah
-      if(added is ChangeNotificationsMixin){
-        //_addOnDataChangeListener(key, other[key-index]);
+      if(added is! ChangeNotificationsMixin) {
+        added = new DataReference(added);
       }
+      _markChanged(key, new Change((key>=_elements.length) ? null:_elements[key], added));
+      _smartUpdateOnDataChangeListener(key, added);
     };
     // Changed keys for _elements
     for(int key=index + iterable.length ; key<_elements.length + iterable.length ; key++){
-      _markChanged(key, new Change((key>=_elements.length) ? null:_elements[key], _elements[key - iterable.length]));
+      var moved = _elements[key - iterable.length];
+      _markChanged(key, new Change((key>=_elements.length) ? null:_elements[key], moved));
+      _smartUpdateOnDataChangeListener(key, moved);
     };
     // Added keys [_elements.length, _elements.length + iterable.length).
     for(int key=_elements.length ; key<_elements.length + iterable.length ; key++){
       _markAdded(key);
+      //update change listener done before
     };
 
     _elements.insertAll(index, iterable);
@@ -176,30 +183,27 @@ class DataList extends Object
   /**
    * Removes the objects in the range [start] inclusive to [end] exclusive.
    */
-  //TODO check if optimal when removing from the end of the list
   void removeRange(int start, int end, {author: null}){
-    _checkRange(start, end);
-
     //nothing to do
     if(end == start){
       return;
     }
+
+    _checkRange(start, end);
 
     int change_end_i = _elements.length - end + start;
 
     // The list will be shifted left after the removal.
     // Changed keys [start, change_end_i) will be changed for [end, end + change_end_i - start)
     for(int key=start ; key<change_end_i ; key++){
-      _markChanged(key, new Change(_elements[key], _elements[end + key - start]));
+      var moved = _elements[end + key - start];
+      _markChanged(key, new Change(_elements[key], moved));
+      _smartUpdateOnDataChangeListener(key, moved);
     };
     // Removed keys [change_end_i, _elements.length).
     for(int key=change_end_i ; key<_elements.length ; key++){
       _markChanged(key, new Change(_elements[key], null));
-
-      if(_elements[key] is ChangeNotificationsMixin){
-        _removeOnDataChangeListener(key);
-      }
-
+      _smartUpdateOnDataChangeListener(key, null);
       _markRemoved(key);
     };
 
@@ -230,17 +234,17 @@ class DataList extends Object
     removeAll(toRemove, author: author);
   }
 
+  /**
+   * Removes all indexes from the greatest to lowest. O(k * n)
+   * TODO Performance could be cut down to O(k logk + n) by a left-right sweep
+   *   and remembering how many indexes were deleted.
+   */
   void removeAll(Iterable indexes, {author: null}){
     List toRemove = new List.from(indexes, growable: false);
     toRemove.sort();
 
     for(int i=toRemove.length-1; i>=0; i--){
       int key = toRemove[i];
-
-      if(_elements[key] is ChangeNotificationsMixin){
-        _removeOnDataChangeListener(key);
-      }
-
       removeAt(key);
     }
   }

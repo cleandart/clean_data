@@ -133,8 +133,7 @@ class Data extends DataView with DataChangeListenersMixin<String> implements Map
         }
         else {
           _markChanged(key, new Change(_fields[key], value));
-          _removeOnDataChangeListener(key);
-          _addOnDataChangeListener(key, value);
+          _smartUpdateOnDataChangeListener(key, value);
           _fields[key] = value;
         }
       } else {
@@ -144,6 +143,7 @@ class Data extends DataView with DataChangeListenersMixin<String> implements Map
         _fields[key] = value;
       }
     });
+
     _notify(author: author);
   }
 
@@ -177,10 +177,7 @@ class Data extends DataView with DataChangeListenersMixin<String> implements Map
     for (var key in keys) {
       _markChanged(key, new Change(_fields[key], null));
       _markRemoved(key);
-
-      if(_fields[key] is ChangeNotificationsMixin){
-        _removeOnDataChangeListener(key);
-      }
+      _removeOnDataChangeListener(key);
 
       _fields.remove(key);
     }
