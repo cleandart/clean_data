@@ -279,7 +279,7 @@ class DataList extends Object
 
     List<ChangeNotificationsMixin> target = new List<ChangeNotificationsMixin>();
     order.forEach((List l) => target.add(_elements[l[1]]));
-    _replaceRange(0, length, target, author: author, forceResuscribe: false);
+    _replaceRange(0, length, target, author: author);
   }
 
   /**
@@ -350,13 +350,19 @@ class DataList extends Object
     _replaceRange(start, end, target, author: author, skipCount: skipCount);
   }
 
+  void _updateIndex(int key, int oLength, ChangeNotificationsMixin cnm){
+    _markChanged(key, new Change((key<oLength)?this[key]:null,
+        (cnm is DataReference)? cnm.value : cnm));
+    _smartUpdateOnDataChangeListener(key, cnm);
+    _elements[key] = cnm;
+  }
+
   /**
    * Usage of [skipCount] is highly discouraged.
-   * If [forceResuscribe] is true then all [DataListners] from [start].. [end] will be removed
    * and then readed in [iterable]. Otherwise only necessary will be resuscribe (set difference).
    */
   void _replaceRange(int start, int end, Iterable<ChangeNotificationsMixin> iterable, {
-    author: null, forceResuscribe: false, skipCount: 0}){
+    author: null, skipCount: 0}){
 
     _checkRange(start, end);
 
@@ -365,38 +371,36 @@ class DataList extends Object
     //[end, length) - moved
     //to [start, start + iterable.length - skipCount) - inserted, as at deletion, we should check if same
 
-    Set<ChangeNotificationsMixin> removed = new Set<ChangeNotificationsMixin>();
-    Set<ChangeNotificationsMixin> added = new Set<ChangeNotificationsMixin>();
-
     int rEnd = start + iterable.length - skipCount;
     int oLength = _elements.length;
     int nLength = rEnd + _elements.length - end;
 
-    //remove
-    for(int key=start; key < end; key++){
-      removed.add(_elements[key]);
-    }
-
     //TODO change notifications
-    //move range [end, oLength), we distinguish list shrink / grow because treating
+    //MOVE range [end, oLength), we distinguish list shrink / grow because treating
     //    both cases in same way would lead to overriding values before copied (swap problem)
       //move right
     if(nLength > oLength){
       _elements.length = nLength;
       for(int key=nLength-1; key >= rEnd ; key--){
-        _elements[key] = _elements[key - nLength + oLength];
+        _updateIndex(key, oLength, _elements[key - nLength + oLength]);
       }
     }
       //move left
     if(nLength < oLength){
       for(int key=rEnd; key < nLength ; key++){
-        _elements[key] = _elements[key - nLength + oLength];
+        _updateIndex(key, oLength, _elements[key - nLength + oLength]);
+      }
+      //REMOVED
+      for(int key=nLength; key<oLength; key++){
+        _markChanged(key, new Change(this[key], null));
+        _markRemoved(key);
+        _removeOnDataChangeListener(key);
       }
       _elements.length = nLength;
     }
     //nothing to do if nLength = oLength
 
-    //insert
+    //INSERT
       //skip count
     var iter = iterable.iterator;
     for(int i=0; i<skipCount + 1; i++){
@@ -404,10 +408,16 @@ class DataList extends Object
     }
       //(key < rEnd) <=> (iter.moveNext())
     for(int key=start; key < rEnd ; key++, iter.moveNext()){
-      added.add(iter.current);
-      _elements[key] = iter.current;
+      _updateIndex(key, oLength, iter.current);
     }
 
+    //ADDED
+    for(int key=oLength; key<nLength; key++){
+      _markAdded(key);
+      _addOnDataChangeListener(key, _elements[key]);
+    }
+
+    _notify(author: author);
     /*
     List other = (iterable is List) ? iterable : new List.from(iterable, growable: false);
 

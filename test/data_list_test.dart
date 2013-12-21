@@ -413,7 +413,7 @@ void main() {
         expect(event['author'], equals('John Doe'));
         expect(event['change'].removedItems.isEmpty, isTrue);
         expect(event['change'].addedItems, unorderedEquals([0,1,2]));
-        expect(event['change'].changedItems.length, unorderedEquals(3));
+        expect(event['change'].changedItems.keys, unorderedEquals([0,1,2]));
 
         // but async onChange drops information about changes in added items.
         dataList.onChange.listen(expectAsync1((changeSet) {
@@ -454,7 +454,7 @@ void main() {
         expect(event['author'], equals('John Doe'));
         expect(event['change'].addedItems.isEmpty, isTrue);
         expect(event['change'].removedItems, unorderedEquals([0]));
-        expect(event['change'].changedItems.length, equals(1));
+        expect(event['change'].changedItems.keys, unorderedEquals([0]));
       });
 
       test('multiple indexes removed. (L06)', () {
