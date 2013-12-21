@@ -557,7 +557,6 @@ void main() {
         }));
       });
 
-
       test('when existing {index, element} is removed then re-added, this is a change. (L10', () {
         // given
         DataList dataList = new DataList.from(['oldElement']);
@@ -808,7 +807,6 @@ void main() {
       */
     });
 
-    /*
     group('(DataReference)', () {
       test('change value with list interface.', () {
         // given
@@ -836,56 +834,38 @@ void main() {
       });
 
       test('reference removed when ChangeNotificationsMixin is assigned.', () {
-        //given
+        // given
         DataList dataList = new DataList.from(['John Doe String']);
         var name = new Data.from({'first': 'John', 'second': 'Doe'});
 
-        //when
+        // when
         var ref1 = dataList.ref(0);
         dataList[0] = name;
 
-        //then
+        // then
         expect(() => dataList.ref(0), throws);
       });
 
      test('reference does not change when another primitive is assigned.', () {
-        //given
+        // given
         DataList dataList = new DataList.from(['oldValue']);
-        var ref1 = data.ref(0);
+        var ref1 = dataList.ref(0);
 
-        //when
+        // when
         dataList[0] = 'newValue';
-        var ref2 = data.ref(0);
-        ref1.value = 500;
+        var ref2 = dataList.ref(0);
+        ref1.value = 'newValue';
 
-        //then
+        // then
         expect(ref1, equals(ref2));
       });
 
       test('passing data reference.', () {
-        //given
+        // given
         var dataRef = new DataReference('John Doe');
-        var dataList = new DataList.from([dataRef]);
-        var listener = new Mock();
 
-        //when
-        var future = new Future.delayed(new Duration(milliseconds: 20), () {
-          dataList.onChangeSync.listen((e) => listener(e));
-          dataRef.value = 'Somerset';
-        });
-
-        // then
-        return future.then((_) {
-          listener.getLogs().verify(happenedOnce);
-          var changes = listener.getLogs().logs.first.args.first['change'];
-
-          //because of single
-          expect(changes.changedItems[0], new isInstanceOf<Change>());
-
-          Change change1 = changes.changedItems[0];
-          expect(change1.oldValue, equals('John Doe'));
-          expect(change1.newValue, equals('Somerset'));
-        });
+        // when & then
+        expect(() => new DataList.from([dataRef]), throwsArgumentError);
       });
 
       //TODO check on replaceRange if references are perserved correctly
@@ -893,7 +873,7 @@ void main() {
 
       });
     });
-
+/*
     group('(Nested DataMap)', () {
       test('listens to changes of its children.', () {
         // given

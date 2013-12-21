@@ -12,6 +12,9 @@ part of clean_dart;
  * But changes are treated as it was Map<index, dynamix>(). So when removing
  * from the middle of [DataList] changes will be generated for each successive elements.
  * See tests for more information.
+ *
+ * We guarantee that [DataReference]s are perserved even after moving objects.
+ * If possible then also DataReferences are for given position are perserved.
  */
 class DataList extends Object
   with IterableMixin, ChangeNotificationsMixin, DataChangeListenersMixin<int>
@@ -279,7 +282,7 @@ class DataList extends Object
 
     List<ChangeNotificationsMixin> target = new List<ChangeNotificationsMixin>();
     order.forEach((List l) => target.add(_elements[l[1]]));
-    _replaceRange(0, length, target, author: author);
+    _replaceRange(0, length, target, author: author, forceDataRef: true);
   }
 
   /**
@@ -302,7 +305,7 @@ class DataList extends Object
   void shuffle([Random random, author=null]){
     List target = new List.from(_elements);
     target.shuffle(random);
-    _replaceRange(0, length, target, author: author);
+    _replaceRange(0, length, target, author: author, forceDataRef: true);
   }
 
   /**
@@ -345,6 +348,11 @@ class DataList extends Object
   void replaceRange(int start, int end, Iterable iterable, {author: null, skipCount: 0}){
     List<ChangeNotificationsMixin> target = new List<ChangeNotificationsMixin>();
     iterable.forEach((element){
+      //because we cannot guarantee that DataReference is perserved both after moving
+      //elements and on index when replacing
+      if(element is DataReference){
+        throw new ArgumentError("Cannot pass DataReference(${element.value}) into DataList.");
+      }
       target.add((element is ChangeNotificationsMixin) ? element : new DataReference(element));
     });
     _replaceRange(start, end, target, author: author, skipCount: skipCount);
@@ -354,15 +362,17 @@ class DataList extends Object
     _markChanged(key, new Change((key<oLength)?this[key]:null,
         (cnm is DataReference)? cnm.value : cnm));
     _smartUpdateOnDataChangeListener(key, cnm);
-    _elements[key] = cnm;
   }
 
   /**
    * Usage of [skipCount] is highly discouraged.
    * and then readed in [iterable]. Otherwise only necessary will be resuscribe (set difference).
+   * If [forceDataRef] then [DataReference] from [iterable] will be used
+   * instead of oldDataRef.value = newDataRef.value.
    */
+  //TODO it is possible to prevent unsuscribe & subscribe on same object.
   void _replaceRange(int start, int end, Iterable<ChangeNotificationsMixin> iterable, {
-    author: null, skipCount: 0}){
+    author: null, skipCount: 0, forceDataRef: false}){
 
     _checkRange(start, end);
 
@@ -382,13 +392,17 @@ class DataList extends Object
     if(nLength > oLength){
       _elements.length = nLength;
       for(int key=nLength-1; key >= rEnd ; key--){
-        _updateIndex(key, oLength, _elements[key - nLength + oLength]);
+        var moved = _elements[key - nLength + oLength];
+        _updateIndex(key, oLength, moved);
+        _elements[key] = moved;
       }
     }
       //move left
     if(nLength < oLength){
       for(int key=rEnd; key < nLength ; key++){
-        _updateIndex(key, oLength, _elements[key - nLength + oLength]);
+        var moved = _elements[key - nLength + oLength];
+        _updateIndex(key, oLength, moved);
+        _elements[key] = moved;
       }
       //REMOVED
       for(int key=nLength; key<oLength; key++){
@@ -409,6 +423,13 @@ class DataList extends Object
       //(key < rEnd) <=> (iter.moveNext())
     for(int key=start; key < rEnd ; key++, iter.moveNext()){
       _updateIndex(key, oLength, iter.current);
+      if(!forceDataRef && key < end && _elements[key] is DataReference
+          && iter.current is DataReference){
+        _elements[key].value = iter.current.value;
+      }
+      else{
+        _elements[key] = iter.current;
+      }
     }
 
     //ADDED
@@ -418,63 +439,5 @@ class DataList extends Object
     }
 
     _notify(author: author);
-    /*
-    List other = (iterable is List) ? iterable : new List.from(iterable, growable: false);
-
-    // The list will be shifted right after the addition.
-    // Changed keys for iterable [index, index + iterable.length)
-    for(int key=index ; key<index+iterable.length ; key++){
-      var added = other[key-index];
-      if(added is! ChangeNotificationsMixin) {
-        added = new DataReference(added);
-      }
-      _markChanged(key, new Change((key>=_elements.length) ? null:_elements[key], added));
-      _smartUpdateOnDataChangeListener(key, added);
-    };
-    // Changed keys for _elements
-    for(int key=index + iterable.length ; key<_elements.length + iterable.length ; key++){
-      var moved = _elements[key - iterable.length];
-      _markChanged(key, new Change((key>=_elements.length) ? null:_elements[key], moved));
-      _smartUpdateOnDataChangeListener(key, moved);
-    };
-    // Added keys [_elements.length, _elements.length + iterable.length).
-    for(int key=_elements.length ; key<_elements.length + iterable.length ; key++){
-      _markAdded(key);
-      //update change listener done before
-    };
-
-    _elements.insertAll(index, iterable);
-
-    _notify(author: author);
-    */
-
-    /*
-    //nothing to do
-    if(end == start){
-      return;
-    }
-
-    _checkRange(start, end);
-
-    int change_end_i = _elements.length - end + start;
-
-    // The list will be shifted left after the removal.
-    // Changed keys [start, change_end_i) will be changed for [end, end + change_end_i - start)
-    for(int key=start ; key<change_end_i ; key++){
-      var moved = _elements[end + key - start];
-      _markChanged(key, new Change(_elements[key], moved));
-      _smartUpdateOnDataChangeListener(key, moved);
-    };
-    // Removed keys [change_end_i, _elements.length).
-    for(int key=change_end_i ; key<_elements.length ; key++){
-      _markChanged(key, new Change(_elements[key], null));
-      _smartUpdateOnDataChangeListener(key, null);
-      _markRemoved(key);
-    };
-
-    _elements.removeRange(start, end);
-
-    _notify(author: author);
-     */
   }
 }
