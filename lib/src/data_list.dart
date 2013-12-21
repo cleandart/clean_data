@@ -137,19 +137,19 @@ class DataList extends Object
   }
 
   /**
-   * Removes the object at position [index] from this list.
-   */
-  dynamic removeAt(int index, {author: null}){
-    dynamic result = this[index];
-    removeAt(index, author: author);
-    return result;
-  }
-
-  /**
    * Pops and returns the last object in this list.
    */
   dynamic removeLast({author: null}){
     return removeAt(_elements.length-1);
+  }
+
+  /**
+   * Removes the object at position [index] from this list.
+   */
+  dynamic removeAt(int index, {author: null}){
+    dynamic result = this[index];
+    removeRange(index, index+1, author: author);
+    return result;
   }
 
   /**
@@ -353,26 +353,56 @@ class DataList extends Object
    */
   void _replaceRange(int start, int end, Iterable<ChangeNotificationsMixin> iterable, {
     author: null, forceResuscribe: false, skipCount: 0}){
-    /*
-    if(index >= length) {
-      throw new RangeError('Index $index out of range(DataList length=$length).');
+
+    _checkRange(start, end);
+
+    //[0, start) - nothing happens
+    //[start, end) - implicitly deleted but we must check if the same objects are inserted (sort, shuffle)
+    //[end, length) - moved
+    //to [start, start + iterable.length - skipCount) - inserted, as at deletion, we should check if same
+
+    Set<ChangeNotificationsMixin> removed = new Set<ChangeNotificationsMixin>();
+    Set<ChangeNotificationsMixin> added = new Set<ChangeNotificationsMixin>();
+
+    int rEnd = start + iterable.length - skipCount;
+    int oLength = _elements.length;
+    int nLength = rEnd + _elements.length - end;
+
+    //remove
+    for(int key=start; key < end; key++){
+      removed.add(_elements[key]);
     }
 
-    if(value is! ChangeNotificationsMixin){
-      value = new DataReference(value);
+    //TODO change notifications
+    //move range [end, oLength), we distinguish list shrink / grow because treating
+    //    both cases in same way would lead to overriding values before copied (swap problem)
+      //move right
+    if(nLength > oLength){
+      _elements.length = nLength;
+      for(int key=nLength-1; key >= rEnd ; key--){
+        _elements[key] = _elements[key - nLength + oLength];
+      }
     }
+      //move left
+    if(nLength < oLength){
+      for(int key=rEnd; key < nLength ; key++){
+        _elements[key] = _elements[key - nLength + oLength];
+      }
+      _elements.length = nLength;
+    }
+    //nothing to do if nLength = oLength
 
-    _smartUpdateOnDataChangeListener(index, value);
-
-    if(_elements[index] is DataReference) {
-      _elements[index].value = value; //fires change
+    //insert
+      //skip count
+    var iter = iterable.iterator;
+    for(int i=0; i<skipCount + 1; i++){
+      iter.moveNext();
     }
-    else {
-      _elements[index] = value;
-      _markChanged(index, new Change(_elements[index], value));
+      //(key < rEnd) <=> (iter.moveNext())
+    for(int key=start; key < rEnd ; key++, iter.moveNext()){
+      added.add(iter.current);
+      _elements[key] = iter.current;
     }
-    _notify();
-    */
 
     /*
     List other = (iterable is List) ? iterable : new List.from(iterable, growable: false);
