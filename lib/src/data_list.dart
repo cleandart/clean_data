@@ -172,7 +172,7 @@ class DataList extends Object
   void removeWhere(bool test(dynamic element), {author: null}){
     List<ChangeNotificationsMixin> target = [];
     for(int key=0; key<_elements.length ; key++){
-        if(test(this[key])) target.add(_elements[key]);
+        if(!test(this[key])) target.add(_elements[key]);
     };
     _replaceRange(0, length, target, author: author);
   }
@@ -221,7 +221,7 @@ class DataList extends Object
    * Returns -1 if element is not found.
    */
   int lastIndexOf(dynamic element, [int start = null]){
-    for(int i = (start == null) ? length : start; i >= 0 ; i--){
+    for(int i = (start == null) ? length-1 : start; i >= 0 ; i--){
       if(this[i] == element){
         return i;
       }
@@ -263,18 +263,22 @@ class DataList extends Object
    * For [DataReference]s their corresponding values will be used for comparison.
    */
   //TODO author (problem with named and positional parameters)
-  void sort([int compare(dynamic a, dynamic b), author=null]){
+  void sort([int compare(dynamic a, dynamic b) = null, author=null]){
+    compare = (compare != null) ? compare : (a,b)=>a.compareTo(b);
+
+    // because we want to compare object values and not DataReferences
     List<List> order = new List<List>();
     for(int i=0; i<length ; i++){
       order.add([this[i], i]);
     }
+
     order.sort((a,b){
-      (a[0] == b[0]) ? ((a[1] > b[1]) ? 1:-1)
-          : ((a[0] > b[0]) ? 1:-1);
+      return compare(a[0],b[0]) == 0 ? a[1].compareTo(b[1])
+          : compare(a[0], b[0]);
     });
 
     List<ChangeNotificationsMixin> target = new List<ChangeNotificationsMixin>();
-    order.forEach(([el, order_i]) => target.add(_elements[order_i]));
+    order.forEach((List l) => target.add(_elements[l[1]]));
     _replaceRange(0, length, target, author: author, forceResuscribe: false);
   }
 

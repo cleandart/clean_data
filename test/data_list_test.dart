@@ -10,14 +10,19 @@ import 'package:unittest/unittest.dart';
 import 'package:unittest/mock.dart';
 import 'package:clean_data/clean_data.dart';
 
+int isSameList(List a, List b){
+  for(int i=0; i<a.length; i++){
+    if(a[i] != b[i]){
+      return 0;
+    }
+  }
+  return 1;
+}
+
 void main() {
   group('(DataList)', () {
 
-//TODO check if DataReferences are perserved
-    // -- I think there was enough listener testing
-
     group('(Implements)', () {
-
       test('DataList(). (T00)', () {
         // when
         DataList dataList = new DataList();
@@ -28,7 +33,7 @@ void main() {
         expect(dataList.length, 0);
       });
 
-      test(' DataList.from(). (T01)', () {
+      test('DataList.from(). (T01)', () {
         // when
         DataList dataList = new DataList.from(['element1', 'element2']);
 
@@ -84,17 +89,7 @@ void main() {
         expect(dataList[2], equals('element3'));
       });
 
-      test('range test. (T06)', () {
-        // given
-        DataList dataList = new DataList.from(['element1', 'element2', 'element3']);
-
-        // when
-        expect(() => dataList.removeRange(-1, 1), throwsArgumentError);
-        expect(() => dataList.removeRange(1, 0), throwsArgumentError);
-        expect(() => dataList.removeRange(1, 4), throwsArgumentError);
-      });
-
-      test('List.removeLast() - middle. (T07)', () {
+      test('List.removeLast(). (T06)', () {
         // given
         DataList dataList = new DataList.from(['element1', 'element2', 'element3']);
 
@@ -106,7 +101,7 @@ void main() {
         expect(dataList[1], equals('element2'));
       });
 
-      test('List.removeAt() - middle. (T08a)', () {
+      test('List.removeAt() - middle. (T07a)', () {
         // given
         DataList dataList = new DataList.from(['element1', 'element2', 'element3']);
 
@@ -115,10 +110,10 @@ void main() {
 
         // then
         expect(dataList[0], equals('element1'));
-        expect(dataList[1], equals('element2'));
+        expect(dataList[1], equals('element3'));
       });
 
-      test('List.removeAt() - front. (T08b)', () {
+      test('List.removeAt() - front. (T07b)', () {
         // given
         DataList dataList = new DataList.from(['element1', 'element2', 'element3']);
 
@@ -126,11 +121,24 @@ void main() {
         dataList.removeAt(0);
 
         // then
-        expect(dataList[1], equals('element2'));
-        expect(dataList[2], equals('element3'));
+        expect(dataList[0], equals('element2'));
+        expect(dataList[1], equals('element3'));
       });
 
-      test('List.clear(). (T27)', () {
+      test('List.asMap(). (T08)', () {
+        // given
+        DataList dataList = new DataList.from(['element1','element2', 'element3']);
+
+        // when
+        Map<int, dynamic> map = dataList.asMap();
+
+        // then
+        expect(map[0], equals('element1'));
+        expect(map[1], equals('element2'));
+        expect(map[2], equals('element3'));
+      });
+
+      test('List.clear(). (T09)', () {
         // given
         DataList dataList = new DataList.from(['element1','element2', 'element3']);
 
@@ -142,36 +150,94 @@ void main() {
             []));
       });
 
-      /**
-       * Inserts all objects of [iterable] at position [index] in this list.
-       */
-      test('List.insertAll(). (T41)', () {
+      test('List.fillRange(). (T10)', () {
+        // given
+        DataList dataList = new DataList.from(
+            ['element1','element2', 'element3', 'element4']);
+
+        // when
+        dataList.fillRange(1,4,'kitty');
+
+        // then
+        expect(new List.from(dataList), orderedEquals(
+            ['element1','kitty', 'kitty', 'kitty']));
+      });
+
+      test('List.getRange(). (T11)', () {
         // given
         DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
+
+        // when & then
+        expect(new List.from(dataList.getRange(1, 3)), orderedEquals(
+            ['element2','element3']));
+      });
+
+      test('List.indexOf(). (T12)', () {
+        // given
+        DataList dataList = new DataList.from(['doge','kitty', 'kitty', 'pikachu']);
+
+        // when & then
+        expect(dataList.indexOf('kitty'), equals(1));
+      });
+
+      test('List.insert(). (T13)', () {
+        // given
+        DataList dataList = new DataList.from(['element1','element2', 'element3']);
+
+        // when
+        dataList.insert(1, 'element1.5');
+
+        // then
+        expect(new List.from(dataList), orderedEquals(
+            ['element1', 'element1.5', 'element2', 'element3']));
+      });
+
+      test('List.insertAll(). (T14)', () {
+        // given
+        DataList dataList = new DataList.from(['element1','element2']);
 
         // when
         dataList.insertAll(1, ['kitty', 'doge']);
 
         // then
         expect(new List.from(dataList), orderedEquals(
-            ['element1', 'kitty', 'doge', 'element2', 'element3', 'element4']));
+            ['element1', 'kitty', 'doge', 'element2']));
       });
 
-      test('List.removeLast(). (T43)', () {
+      test('List.lastIndexOf(). (T15)', () {
         // given
-        DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
+        DataList dataList = new DataList.from(['kitty','kitty', 'kitty', 'doge']);
+
+        // when & then
+        expect(dataList.lastIndexOf('kitty'), equals(2));
+      });
+
+      test('List.remove(). (T16)', () {
+        // given
+        DataList dataList = new DataList.from(['kitty', 'doge', 'doge', 'pikachu']);
 
         // when
-        dataList.removeLast();
+        dataList.remove('doge');
 
         // then
         expect(new List.from(dataList), orderedEquals(
-            ['element1','element2', 'element3']));
+            ['kitty', 'doge', 'pikachu']));
       });
 
-      test('List.removeRange() from middle. (T44)', () {
+      test('List.removeRange() - rangeTest. (T17)', () {
         // given
-        DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
+        DataList dataList = new DataList.from(['element1', 'element2', 'element3']);
+
+        // when
+        expect(() => dataList.removeRange(-1, 1), throwsArgumentError);
+        expect(() => dataList.removeRange(1, 0), throwsArgumentError);
+        expect(() => dataList.removeRange(1, 4), throwsArgumentError);
+      });
+
+      test('List.removeRange() - from middle. (T18)', () {
+        // given
+        DataList dataList = new DataList.from(
+            ['element1','element2', 'element3', 'element4']);
 
         // when
         dataList.removeRange(1,3);
@@ -181,24 +247,10 @@ void main() {
             ['element1', 'element4']));
       });
 
-      test('List.removeRange() from end. (T44.5)', () {
+      test('List.removeWhere(). (T19)', () {
         // given
-        DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
-
-        // when
-        dataList.removeRange(1,4);
-
-        // then
-        expect(new List.from(dataList), orderedEquals(
-            ['element1']));
-      });
-
-      /**
-       * Removes all objects from this list that satisfy [test].
-       */
-      test('List.removeWhere(). (T36)', () {
-        // given
-        DataList dataList = new DataList.from(['element1','doge', 'doge', 'element4']);
+        DataList dataList = new DataList.from(
+            ['element1','doge', 'doge', 'element4']);
 
         // when
         dataList.removeWhere((el) => el == 'doge');
@@ -208,12 +260,24 @@ void main() {
             ['element1', 'element4']));
       });
 
-      /**
-       * Removes all objects from this list that fail to satisfy [test].
-       */
-      test('List.retainWhere(). (T37)', () {
+      // replaceRange is more extensively tested in (DataReference) (replaceRange)
+      test('List.replaceRange(). (T20)', () {
         // given
-        DataList dataList = new DataList.from(['kitty','element2', 'element3', 'kitty']);
+        DataList dataList = new DataList.from(
+            ['element1','element2', 'element3', 'element4']);
+
+        // when
+        dataList.replaceRange(1,3,['kitty']);
+
+        // then
+        expect(new List.from(dataList), orderedEquals(
+            ['element1', 'kitty', 'element4']));
+      });
+
+      test('List.retainWhere(). (T21)', () {
+        // given
+        DataList dataList = new DataList.from(
+            ['element0','kitty','element2', 'element3', 'kitty']);
 
         // when
         dataList.retainWhere((el) => el == 'kitty');
@@ -222,34 +286,83 @@ void main() {
         expect(new List.from(dataList), orderedEquals(
             ['kitty', 'kitty']));
       });
+
+      test('List.reversed(). (T22)', () {
+        // given
+        DataList dataList = new DataList.from(['element1','element2', 'element3']);
+
+        // when & then
+        expect(new List.from(dataList.reversed), orderedEquals(
+            ['element3','element2', 'element1']));
+      });
+
+      test('List.setAll(). (T23)', () {
+        // given
+        DataList dataList = new DataList.from(
+            ['element1', 'element2', 'element3']);
+
+        // when
+        dataList.setAll(1, ['kitty', 'doge']);
+
+        // then
+        expect(new List.from(dataList), orderedEquals(
+            ['element1', 'kitty', 'doge']));
+      });
+
+      test('List.setRange(). (T24)', () {
+        // given
+        DataList dataList = new DataList.from(
+            ['element1', 'element2', 'element3', 'element4']);
+
+        // when
+        dataList.setRange(1,3, ['doge', 'kitty', 'pikachu'], 1);
+
+        // then
+        expect(new List.from(dataList), orderedEquals(
+            ['element1', 'kitty', 'pikachu', 'element4']));
+      });
+
+      test('List.shuffle(). (T25)', () {
+        // given
+        DataList dataList = new DataList.from(
+            ['element1', 'element2', 'element3', 'element4']);
+        List target = ['element4', 'element1', 'element3', 'element2'];
+        int target_met = 0;
+
+        // when - try 10 times more permutations then permutation count
+        for(int i=0; i<10*24; i++){
+          dataList.shuffle();
+          target_met += isSameList(target, new List.from(dataList));
+        }
+
+        // then
+        expect(target_met, lessThan(15));
+        expect(target_met, greaterThan(5));
+      });
+
+      test('List.sort(). (T26)', () {
+        // given
+        DataList dataList = new DataList.from(
+            ['element4', 'element1', 'element3', 'element5', 'element2']);
+
+        // when
+        dataList.sort();
+
+        // then
+        expect(new List.from(dataList), orderedEquals(
+            ['element1','element2', 'element3', 'element4', 'element5']));
+      });
+
+      test('List.sublist(). (T27)', () {
+        // given
+        DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
+
+        // when & then
+        expect(new List.from(dataList.sublist(1)), orderedEquals(
+            ['element2','element3', 'element4']));
+      });
     });
 
-      /*
-      void add
-      void addAll
-      void insert
-      void insertAll
-      bool remove
-      dynamic removeLast
-      dynamic removeAt
-      void removeRange
-      void clear
-      void removeWhere
-      void retainWhere
-      Iterable get reversed
-      Iterable getRange
-      void setAll
-      int lastIndexOf
-      List sublist
-      int indexOf
-      void sort
-      void fillRange
-      void shuffle
-      Map<int, dynamic> asMap
-      void setRange
-      void replaceRange
-      void _replaceRange
-*/
 /*
     group('(Listen)', () {
       test('element added. (T08)', () {
@@ -690,8 +803,7 @@ void main() {
           expect(true, isFalse);
         }));
       });
-    });
-*/
+
       //TODO
       /*
       test('when child Data is removed, changed and then added, only change is propagated.', () {
@@ -711,11 +823,9 @@ void main() {
       }));
       });
       */
-
-
-
+    });
+*/
     /*
-    //TODO addAll, insertAll, removeRange, removeAll
     group('(DataReference)', () {
       test('change value with list interface.', () {
         // given
@@ -793,6 +903,11 @@ void main() {
           expect(change1.oldValue, equals('John Doe'));
           expect(change1.newValue, equals('Somerset'));
         });
+      });
+
+      //TODO check on replaceRange if references are perserved correctly
+      group('(Perserved)', () {
+
       });
     });
 
