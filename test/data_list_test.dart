@@ -363,9 +363,9 @@ void main() {
       });
     });
 
-/*
+
     group('(Listen)', () {
-      test('element added. (T08)', () {
+      test('asynchronously on element added. (L01)', () {
         // given
         DataList dataList = new DataList();
 
@@ -376,59 +376,55 @@ void main() {
         dataList.onChange.listen(expectAsync1((ChangeSet event) {
           expect(event.changedItems.isEmpty, isTrue);
           expect(event.removedItems.isEmpty, isTrue);
-          expect(event.addedItems, equals([0]));
+          expect(event.addedItems, unorderedEquals([0]));
         }));
       });
 
-      test('listen synchronously on element added. (T09)', () {
+      test('synchronously on element added. (L02)', () {
         // given
         DataList dataList = new DataList();
-        var mock = new Mock();
-        dataList.onChangeSync.listen((event) => mock(event));
+        var onChange = new Mock();
+        dataList.onChangeSync.listen((event) => onChange(event));
 
         // when
         dataList.add('element', author: 'John Doe');
 
         // then
-        mock.getLogs().verify(happenedOnce);
-        var event = mock.getLogs().first.args[0];
+        onChange.getLogs().verify(happenedOnce);
+        var event = onChange.getLogs().first.args[0];
         expect(event['author'], equals('John Doe'));
-        expect(event['change'].addedItems, equals([0]));
-        expect(event['change'].changedItems.keys, equals([0]));
+        expect(event['change'].addedItems, unorderedEquals([0]));
+        expect(event['change'].changedItems.keys, unorderedEquals([0]));
       });
 
-      test('multiple elements added. (T10)', () {
+      test('multiple elements added. (L03)', () {
         // given
         List list = ['element1', 'element2', 'element3'];
         DataList dataList = new DataList();
-        var mock = new Mock();
-        dataList.onChangeSync.listen((event) => mock(event));
+        var onChange = new Mock();
+        dataList.onChangeSync.listen((event) => onChange(event));
 
         // when
         dataList.addAll(list, author: 'John Doe');
 
-        // then sync onChange propagates information about all changes and
-        // adds
-
-        mock.getLogs().verify(happenedOnce);
-        var event = mock.getLogs().first.args.first;
+        //then
+        onChange.getLogs().verify(happenedOnce);
+        var event = onChange.getLogs().first.args.first;
         expect(event['author'], equals('John Doe'));
-
-        var changeSet = event['change'];
-        expect(changeSet.removedItems.isEmpty, isTrue);
-        expect(changeSet.addedItems, orderedEquals([0,1,2]));
-        expect(changeSet.changedItems.length, equals(3));
+        expect(event['change'].removedItems.isEmpty, isTrue);
+        expect(event['change'].addedItems, unorderedEquals([0,1,2]));
+        expect(event['change'].changedItems.length, unorderedEquals(3));
 
         // but async onChange drops information about changes in added items.
         dataList.onChange.listen(expectAsync1((changeSet) {
-          expect(changeSet.addedItems, orderedEquals([0,1,2]));
+          expect(changeSet.addedItems, unorderedEquals([0,1,2]));
           expect(changeSet.removedItems.isEmpty, isTrue);
           expect(changeSet.changedItems.isEmpty, isTrue);
         }));
 
       });
 
-      test('index removed. (T11)', () {
+      test('asynchronously index removed. (L04)', () {
         // given
         DataList dataList = new DataList.from(['element1']);
 
@@ -437,62 +433,72 @@ void main() {
 
         // then
         dataList.onChange.listen(expectAsync1((ChangeSet event) {
-          expect(event.changedItems.keys, orderedEquals([]));
-          expect(event.addedItems, orderedEquals([]));
-          expect(event.removedItems, orderedEquals([0]));
+          expect(event.changedItems.keys, unorderedEquals([]));
+          expect(event.addedItems, unorderedEquals([]));
+          expect(event.removedItems, unorderedEquals([0]));
         }));
       });
 
-      test('listen synchronously on index removed. (T12)', () {
+      test('synchronously on index removed. (L05)', () {
         // given
         DataList dataList = new DataList.from(['element1']);
-        var mock = new Mock();
-        dataList.onChangeSync.listen((event) => mock(event));
+        var onChange = new Mock();
+        dataList.onChangeSync.listen((event) => onChange(event));
 
         // when
         dataList.removeAt(0, author: 'John Doe');
 
         // then
-        mock.getLogs().verify(happenedOnce);
-        var event = mock.getLogs().logs.first.args.first;
+        onChange.getLogs().verify(happenedOnce);
+        var event = onChange.getLogs().logs.first.args.first;
         expect(event['author'], equals('John Doe'));
         expect(event['change'].addedItems.isEmpty, isTrue);
-        expect(event['change'].removedItems, orderedEquals([0]));
+        expect(event['change'].removedItems, unorderedEquals([0]));
         expect(event['change'].changedItems.length, equals(1));
       });
 
-      test('multiple indexes removed. (T13)', () {
+      test('multiple indexes removed. (L06)', () {
         // given
         DataList dataList = new DataList.from(['element1', 'element2', 'element3']);
-        var mock = new Mock();
-        dataList.onChangeSync.listen((event) => mock(event));
+        var onChange = new Mock();
+        dataList.onChangeSync.listen((event) => onChange(event));
 
         // when
         dataList.removeRange(1,3, author: 'John Doe');
 
         //then
-        mock.getLogs().verify(happenedOnce);
-        var event = mock.getLogs().first.args[0];
+        onChange.getLogs().verify(happenedOnce);
+        var event = onChange.getLogs().first.args[0];
         expect(event['author'], equals('John Doe'));
         var changeSet = event['change'];
-        expect(changeSet.removedItems, orderedEquals([1,2]));
+        expect(changeSet.removedItems, unorderedEquals([1,2]));
 
         // but async onChange drops information about changes in removed items.
         dataList.onChange.listen(expectAsync1((changeSet) {
-          expect(changeSet.removedItems, orderedEquals([1,2]));
+          expect(changeSet.removedItems, unorderedEquals([1,2]));
           expect(changeSet.addedItems.isEmpty, isTrue);
           expect(changeSet.changedItems.isEmpty, isTrue);
         }));
       });
 
-      test('{index, element} changed. (T15)', () {
+      test('{index, element} changed. (L07)', () {
         // given
         DataList dataList = new DataList.from(['oldElement']);
+        var onChange = new Mock();
+        dataList.onChangeSync.listen((event) => onChange(event));
 
         // when
         dataList[0] = 'newElement';
 
         // then
+        onChange.getLogs().verify(happenedOnce);
+        var event = onChange.getLogs().first.args[0];
+        expect(event['change'].addedItems.isEmpty, isTrue);
+        expect(event['change'].removedItems.isEmpty, isTrue);
+        expect(event['change'].changedItems.keys, unorderedEquals([0]));
+        expect(event['change'].changedItems[0].oldValue, equals('oldElement'));
+        expect(event['change'].changedItems[0].newValue, equals('newElement'));
+
         dataList.onChange.listen(expectAsync1((ChangeSet event) {
           expect(event.addedItems.isEmpty, isTrue);
           expect(event.removedItems.isEmpty, isTrue);
@@ -503,7 +509,7 @@ void main() {
         }));
       });
 
-      test('propagate multiple changes in single [ChangeSet]. (T16)', () {
+      test('propagate multiple changes in single [ChangeSet]. (L08a)', () {
         // given
         DataList dataList = new DataList.from(['element1', 'element2']);
 
@@ -513,13 +519,13 @@ void main() {
 
         // then
         dataList.onChange.listen(expectAsync1((ChangeSet event) {
-          expect(event.changedItems.keys, orderedEquals([0]));
-          expect(event.removedItems, orderedEquals([]));
-          expect(event.addedItems, orderedEquals([2]));
+          expect(event.changedItems.keys, unorderedEquals([0]));
+          expect(event.removedItems, unorderedEquals([]));
+          expect(event.addedItems, unorderedEquals([2]));
         }));
       });
 
-      test('propagate multiple changes in single [ChangeSet]. (T16.5)', () {
+      test('propagate multiple changes in single [ChangeSet]. (L08b)', () {
         // given
         DataList dataList = new DataList.from(['element1', 'element2']);
 
@@ -529,13 +535,13 @@ void main() {
 
         // then
         dataList.onChange.listen(expectAsync1((ChangeSet event) {
-          expect(event.changedItems.keys, orderedEquals([0]));
-          expect(event.removedItems, orderedEquals([1]));
-          expect(event.addedItems, orderedEquals([]));
+          expect(event.changedItems.keys, unorderedEquals([0]));
+          expect(event.removedItems, unorderedEquals([1]));
+          expect(event.addedItems, unorderedEquals([]));
         }));
       });
 
-      test('when element is added then changed, only addition is in the [ChangeSet]. (T17)', () {
+      test('when element is added then changed, only addition is in the [ChangeSet]. (L09)', () {
         // given
         DataList dataList = new DataList();
 
@@ -545,14 +551,14 @@ void main() {
 
         // then
         dataList.onChange.listen(expectAsync1((ChangeSet event) {
-          expect(event.changedItems.keys, orderedEquals([]));
-          expect(event.addedItems, orderedEquals([0]));
-          expect(event.removedItems, orderedEquals([]));
+          expect(event.changedItems.keys, unorderedEquals([]));
+          expect(event.addedItems, unorderedEquals([0]));
+          expect(event.removedItems, unorderedEquals([]));
         }));
       });
 
 
-      test('when existing {index, element} is removed then re-added, this is a change. (T18', () {
+      test('when existing {index, element} is removed then re-added, this is a change. (L10', () {
         // given
         DataList dataList = new DataList.from(['oldElement']);
 
@@ -562,18 +568,18 @@ void main() {
 
         // then
         dataList.onChange.listen(expectAsync1((ChangeSet event) {
-          expect(event.changedItems.keys, orderedEquals([0]));
+          expect(event.changedItems.keys, unorderedEquals([0]));
 
           Change change = event.changedItems[0];
           expect(change.oldValue, equals('oldElement'));
           expect(change.newValue, equals('newElement'));
 
-          expect(event.addedItems, orderedEquals([]));
-          expect(event.removedItems, orderedEquals([]));
+          expect(event.addedItems, unorderedEquals([]));
+          expect(event.removedItems, unorderedEquals([]));
         }));
       });
 
-      test('when {index, element} is changed then removed, only deletion is in the [ChangeSet]. (T19)', () {
+      test('when {index, element} is changed then removed, only deletion is in the [ChangeSet]. (L11)', () {
         // given
         DataList dataList = new DataList.from(['oldElement']);
 
@@ -583,12 +589,12 @@ void main() {
 
         // then
         dataList.onChange.listen(expectAsync1((ChangeSet event) {
-          expect(event.changedItems.keys, orderedEquals([]));
-          expect(event.removedItems, orderedEquals([0]));
+          expect(event.changedItems.keys, unorderedEquals([]));
+          expect(event.removedItems, unorderedEquals([0]));
         }));
       });
 
-      test('when {index, element} is added then removed, no changes are broadcasted. (T20)', () {
+      test('when {index, element} is added then removed, no changes are broadcasted. (L12)', () {
         // given
         DataList dataList = new DataList();
 
@@ -600,7 +606,7 @@ void main() {
         dataList.onChange.listen(protectAsync1((e) => expect(true, isFalse)));
       });
 
-      test('when {element} is added, changed then removed, no changes are broadcasted. (T21)', () {
+      test('when {element} is added, changed then removed, no changes are broadcasted. (L13)', () {
         // given
         DataList dataList = new DataList();
 
@@ -613,44 +619,36 @@ void main() {
         dataList.onChange.listen(protectAsync1((e) => expect(true, isFalse)));
       });
 
-      test('insert element into middle of list. (T22)', () {
+      test('insert element into middle of list. (L14)', () {
         // given
         DataList dataList = new DataList.from(['element1','element2', 'element3']);
-        var mock = new Mock();
-        dataList.onChangeSync.listen((event) => mock(event));
+        var onChange = new Mock();
+        dataList.onChangeSync.listen((event) => onChange(event));
 
         // when
         dataList.insert(1, 'element1.5');
 
         // then
-          //content
-        expect(new List.from(dataList), orderedEquals(
-            ['element1','element1.5', 'element2', 'element3']));
-
-          //changes
-        mock.getLogs().verify(happenedExactly(1));
-        var change = mock.getLogs().logs.first.args.first['change'];
-        expect(change.changedItems.keys, orderedEquals([1,2,3]));
-        expect(change.addedItems, orderedEquals([3]));
-        expect(change.removedItems, orderedEquals([]));
+        onChange.getLogs().verify(happenedExactly(1));
+        var change = onChange.getLogs().logs.first.args.first['change'];
+        expect(change.changedItems.keys, unorderedEquals([1,2,3]));
+        expect(change.addedItems, unorderedEquals([3]));
+        expect(change.removedItems, unorderedEquals([]));
       });
 
-      test('insert multiple elements into middle of list. (T23)', () {
+      test('insert multiple elements into middle of list. (L15)', () {
         // given
         DataList dataList = new DataList.from(['element1','element2']);
-        var mock = new Mock();
-        dataList.onChangeSync.listen((event) => mock(event));
+        var onChange = new Mock();
+        dataList.onChangeSync.listen((event) => onChange(event));
 
         // when
         dataList.insertAll(1, ['element1.1', 'element1.25', 'element1.5']);
 
         // then
-        expect(new List.from(dataList), orderedEquals(
-            ['element1', 'element1.1', 'element1.25', 'element1.5', 'element2']));
-
-        mock.getLogs().verify(happenedExactly(1));
-        var change = mock.getLogs().logs.first.args.first['change'];
-        expect(change.changedItems.keys, orderedEquals([1,2,3,4]));
+        onChange.getLogs().verify(happenedExactly(1));
+        var change = onChange.getLogs().logs.first.args.first['change'];
+        expect(change.changedItems.keys, unorderedEquals([1,2,3,4]));
 
         Change change1 = change.changedItems[1];
         expect(change1.oldValue, equals('element2'));
@@ -668,22 +666,22 @@ void main() {
         expect(change4.oldValue, equals(null));
         expect(change4.newValue, equals('element2'));
 
-        expect(change.addedItems, orderedEquals([2,3,4]));
-        expect(change.removedItems, orderedEquals([]));
+        expect(change.addedItems, unorderedEquals([2,3,4]));
+        expect(change.removedItems, unorderedEquals([]));
 
         dataList.onChange.listen(expectAsync1((ChangeSet event) {
-          expect(event.changedItems.keys, orderedEquals([1]));
+          expect(event.changedItems.keys, unorderedEquals([1]));
 
           Change change1 = event.changedItems[1];
           expect(change1.oldValue, equals('element2'));
           expect(change1.newValue, equals('element1.1'));
 
-          expect(event.addedItems, orderedEquals([2,3,4]));
-          expect(event.removedItems, orderedEquals([]));
+          expect(event.addedItems, unorderedEquals([2,3,4]));
+          expect(event.removedItems, unorderedEquals([]));
         }));
       });
 
-      test('multiple elements inserted to beginning. (T23.5)', () {
+      test('insert multiple elements into front. (L16)', () {
         // given
         DataList dataList = new DataList.from(['element1', 'element2']);
 
@@ -691,11 +689,8 @@ void main() {
         dataList.insertAll(0, ['element0.25', 'element0.5']);
 
         // then
-        expect(new List.from(dataList), orderedEquals(
-            ['element0.25', 'element0.5', 'element1', 'element2']));
-
         dataList.onChange.listen(expectAsync1((ChangeSet event) {
-          expect(event.changedItems.keys, orderedEquals([0,1]));
+          expect(event.changedItems.keys, unorderedEquals([0,1]));
 
           Change change1 = event.changedItems[0];
           expect(change1.oldValue, equals('element1'));
@@ -705,32 +700,29 @@ void main() {
           expect(change2.oldValue, equals('element2'));
           expect(change2.newValue, equals('element0.5'));
 
-          expect(event.addedItems, orderedEquals([2, 3]));
-          expect(event.removedItems, orderedEquals([]));
+          expect(event.addedItems, unorderedEquals([2, 3]));
+          expect(event.removedItems, unorderedEquals([]));
         }));
       });
 
-      test('elements removed from middle. (T24)', () {
+      test('element removed from middle. (L17)', () {
         // given
         DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4']);
-        var mock = new Mock();
-        dataList.onChangeSync.listen((event) => mock(event));
+        var onChange = new Mock();
+        dataList.onChangeSync.listen((event) => onChange(event));
 
         // when
         dataList.removeAt(1);
 
         // then
-        expect(new List.from(dataList), orderedEquals(
-            ['element1', 'element3', 'element4']));
-
-        mock.getLogs().verify(happenedExactly(1));
-        var change = mock.getLogs().logs.first.args.first['change'];
-        expect(change.changedItems.keys, orderedEquals([1,2,3]));
-        expect(change.addedItems, orderedEquals([]));
-        expect(change.removedItems, orderedEquals([3]));
+        onChange.getLogs().verify(happenedExactly(1));
+        var change = onChange.getLogs().logs.first.args.first['change'];
+        expect(change.changedItems.keys, unorderedEquals([1,2,3]));
+        expect(change.addedItems, unorderedEquals([]));
+        expect(change.removedItems, unorderedEquals([3]));
       });
 
-      test('remove multiple elements from middle. (T25)', () {
+      test('remove multiple elements from middle. (L18)', () {
         // given
         DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4', 'element5']);
 
@@ -739,11 +731,8 @@ void main() {
         dataList.removeAt(1);
 
         // then
-        expect(new List.from(dataList), orderedEquals(
-            ['element1', 'element4', 'element5']));
-
         dataList.onChange.listen(expectAsync1((ChangeSet event) {
-          expect(event.changedItems.keys, orderedEquals([1,2]));
+          expect(event.changedItems.keys, unorderedEquals([1,2]));
 
           Change change1 = event.changedItems[1];
           expect(change1.oldValue, equals('element2'));
@@ -753,12 +742,12 @@ void main() {
           expect(change2.oldValue, equals('element3'));
           expect(change2.newValue, equals('element5'));
 
-          expect(event.addedItems, orderedEquals([]));
-          expect(event.removedItems, orderedEquals([3,4]));
+          expect(event.addedItems, unorderedEquals([]));
+          expect(event.removedItems, unorderedEquals([3,4]));
         }));
       });
 
-      test('remove multiple elements from beginning. (T25.5)', () {
+      test('remove multiple elements from from. (L19)', () {
         // given
         DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4', 'element5']);
 
@@ -766,11 +755,8 @@ void main() {
         dataList.removeRange(0,3);
 
         // then
-        expect(new List.from(dataList), orderedEquals(
-            ['element4', 'element5']));
-
         dataList.onChange.listen(expectAsync1((ChangeSet event) {
-          expect(event.changedItems.keys, orderedEquals([0,1]));
+          expect(event.changedItems.keys, unorderedEquals([0,1]));
 
           Change change1 = event.changedItems[0];
           expect(change1.oldValue, equals('element1'));
@@ -780,12 +766,12 @@ void main() {
           expect(change2.oldValue, equals('element2'));
           expect(change2.newValue, equals('element5'));
 
-          expect(event.addedItems, orderedEquals([]));
-          expect(event.removedItems, orderedEquals([2,3,4]));
+          expect(event.addedItems, unorderedEquals([]));
+          expect(event.removedItems, unorderedEquals([2,3,4]));
         }));
       });
 
-      test('removing multiple from middle and then reading same makes no change. (T26)', () {
+      test('removing multiple from middle and then readding same makes no change. (L20)', () {
         // given
         DataList dataList = new DataList.from(['element1','element2', 'element3', 'element4', 'element5']);
 
@@ -796,9 +782,6 @@ void main() {
         dataList.insert(1, 'element2');
 
         // then
-        expect(new List.from(dataList), orderedEquals(
-            ['element1','element2', 'element3', 'element4', 'element5']));
-
         dataList.onChange.listen(protectAsync1((ChangeSet event) {
           expect(true, isFalse);
         }));
@@ -824,7 +807,7 @@ void main() {
       });
       */
     });
-*/
+
     /*
     group('(DataReference)', () {
       test('change value with list interface.', () {
