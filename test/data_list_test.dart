@@ -336,8 +336,8 @@ void main() {
         }
 
         // then
-        expect(target_met, lessThan(15));
-        expect(target_met, greaterThan(5));
+        expect(target_met, lessThan(18));
+        expect(target_met, greaterThan(2));
       });
 
       test('List.sort(). (T26)', () {
@@ -868,9 +868,97 @@ void main() {
         expect(() => new DataList.from([dataRef]), throwsArgumentError);
       });
 
-      //TODO check on replaceRange if references are perserved correctly
       group('(Perserved)', () {
+        test('insert', (){
+          // given
+          DataList dataList = new DataList.from(['el1','el2','el3']);
+          DataReference ref0 = dataList.ref(0);
+          DataReference ref1 = dataList.ref(1);
+          DataReference ref2 = dataList.ref(2);
 
+          // when
+          dataList.insert(1,'newEl');
+          DataReference newRef1 = dataList.ref(1);
+
+          // then
+          expect(dataList.ref(0), equals(ref0));
+          expect(dataList.ref(2), equals(ref1));
+          expect(dataList.ref(3), equals(ref2));
+
+          expect(dataList.ref(0), isNot(newRef1));
+          expect(dataList.ref(1), equals(newRef1));
+          expect(dataList.ref(2), isNot(newRef1));
+          expect(dataList.ref(3), isNot(newRef1));
+        });
+
+        test('removeAt', (){
+          // given
+          DataList dataList = new DataList.from(['el1','el2','el3']);
+          DataReference ref0 = dataList.ref(0);
+          DataReference ref1 = dataList.ref(1);
+          DataReference ref2 = dataList.ref(2);
+
+          // when
+          dataList.removeAt(1);
+
+          // then
+          expect(dataList.ref(0), equals(ref0));
+          expect(dataList.ref(1), equals(ref2));
+        });
+
+        test('replaceRange - add', (){
+          // given
+          DataList dataList = new DataList.from(['el1','el2','el3','el4']);
+          DataReference ref0 = dataList.ref(0);
+          DataReference ref1 = dataList.ref(1);
+          DataReference ref2 = dataList.ref(2);
+          DataReference ref3 = dataList.ref(3);
+
+          // when
+          dataList.replaceRange(1,3, ['newEl2', 'newEl3', 'newEl3.5']);
+
+          // then
+          expect(dataList.ref(0), equals(ref0));
+          expect(dataList.ref(1), equals(ref1));
+          expect(dataList.ref(2), equals(ref2));
+          expect(dataList.ref(3), isNot(ref3));
+          expect(dataList.ref(4), equals(ref3));
+        });
+
+        test('replaceRange - remove', (){
+          // given
+          DataList dataList = new DataList.from(['el1','el2','el3','el4']);
+          DataReference ref0 = dataList.ref(0);
+          DataReference ref1 = dataList.ref(1);
+          DataReference ref2 = dataList.ref(2);
+          DataReference ref3 = dataList.ref(3);
+
+          // when
+          dataList.replaceRange(1,3, ['newEl2']);
+
+          // then
+          expect(dataList.ref(0), equals(ref0));
+          expect(dataList.ref(1), equals(ref1));
+          expect(dataList.ref(2), equals(ref3));
+        });
+
+        test('sort', (){
+          // given
+          DataList dataList = new DataList.from(['el3','el1','el4','el2']);
+          DataReference ref3 = dataList.ref(0);
+          DataReference ref1 = dataList.ref(1);
+          DataReference ref4 = dataList.ref(2);
+          DataReference ref2 = dataList.ref(3);
+
+          // when
+          dataList.sort();
+
+          // then
+          expect(dataList.ref(0), equals(ref1));
+          expect(dataList.ref(1), equals(ref2));
+          expect(dataList.ref(2), equals(ref3));
+          expect(dataList.ref(3), equals(ref4));
+        });
       });
     });
 /*
