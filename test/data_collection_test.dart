@@ -260,10 +260,10 @@ void main() {
       var winterCollection = new DataCollection.from([december, january,
                                                      february]);
 
-      Mock mock = new Mock();
+      var mock = new Mock();
 
       winterCollection.onBeforeAdd.listen((d) {
-          mock.handler(d);
+          mock(d);
           expect(winterCollection.contains(march), isFalse);
           expect(d, equals(march));
       });
@@ -280,10 +280,10 @@ void main() {
       var winterCollection = new DataCollection.from([december, january,
                                                      february]);
 
-      Mock mock = new Mock();
+      var mock = new Mock();
 
       winterCollection.onBeforeRemove.listen((d) {
-          mock.handler(d);
+          mock(d);
           expect(winterCollection.contains(december), isTrue);
           expect(d, equals(december));
       });
@@ -300,10 +300,10 @@ void main() {
       var winterCollection = new DataCollection.from([december, january,
                                                      february]);
 
-      Mock mock = new Mock();
+      var mock = new Mock();
 
       winterCollection.onBeforeRemove.listen((d) {
-          mock.handler(d);
+          mock(d);
           expect(winterCollection.contains(december), isTrue);
           expect(winterCollection.contains(january), isTrue);
           expect(winterCollection.contains(february), isTrue);
@@ -323,10 +323,10 @@ void main() {
 
       winterCollection.addIndex(['number']);
 
-      Mock mock = new Mock();
+      var mock = new Mock();
 
       winterCollection.onBeforeRemove.listen((d) {
-          mock.handler(d);
+          mock(d);
           expect(winterCollection.contains(february), isTrue);
           expect(d, equals(february));
       });
