@@ -66,7 +66,8 @@ abstract class DataChangeListenersMixin<T> {
     //  -- and this code actually fixes this bad state ;)
     _removeOnDataChangeListener(key);
 
-    if(dataObj != null && dataObj is ChangeNotificationsMixin)
-    _addOnDataChangeListener(key, dataObj);
+    if(dataObj != null && dataObj is ChangeNotificationsMixin){
+      _addOnDataChangeListener(key, dataObj);
+    }
   }
 }

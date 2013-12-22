@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 //TODO check if this[index] is called properly.
 
-part of clean_dart;
+part of clean_data;
 
 /**
  * List with change notifications. Change set contains indexes which were changed.
@@ -44,7 +44,9 @@ class DataList extends Object
     }
   }
 
-  final List<ChangeNotificationsMixin> _elements = new List();
+  //DEVELOPER
+  List _elements = [];
+  List _fake = [];
 
   /**
    * Creates an empty [DataList] object.
@@ -75,7 +77,7 @@ class DataList extends Object
    */
   DataReference ref(int index) {
     if(_elements[index] is!  DataReference) {
-      throw new Exception("'$index' is not primitive data type.");
+      throw new ArgumentError("'$index' is not primitive data type.");
     }{
       return _elements[index];
     }
@@ -91,7 +93,7 @@ class DataList extends Object
       return _elements[index].value;
     }
     else {
-      _elements[index];
+      return _elements[index];
     }
   }
 
@@ -435,7 +437,7 @@ class DataList extends Object
     //ADDED
     for(int key=oLength; key<nLength; key++){
       _markAdded(key);
-      _addOnDataChangeListener(key, _elements[key]);
+      //listener was added at INSERT:_updateIndex
     }
 
     _notify(author: author);

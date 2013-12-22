@@ -20,8 +20,8 @@ int isSameList(List a, List b){
 }
 
 void main() {
-  group('(DataList)', () {
 
+  group('(DataList)', () {
     group('(Implements)', () {
       test('DataList(). (T00)', () {
         // when
@@ -961,8 +961,18 @@ void main() {
         });
       });
     });
-/*
+
+    //TODO add more complex tests with replaceRange and listener unsuscribing
+
     group('(Nested DataMap)', () {
+      test('cannot get reference.', () {
+        // given
+        DataList dataList = new DataList.from([new Data()]);
+
+        // when & then
+        expect(() => dataList.ref(0), throwsArgumentError);
+      });
+
       test('listens to changes of its children.', () {
         // given
         DataList dataList = new DataList.from([new Data(), new Data()]);
@@ -977,27 +987,6 @@ void main() {
           expect(event.changedItems[1].addedItems, equals(['name']));
         }));
       });
-      /*
-      test('listens to changes of its children with insertAll', () {
-        // given
-        List childs = [new Data(),new Data(),new Data(),new Data()];
-        DataList dataList = new DataList.from([childs[0], childs[3]]);
-
-        // when
-        dataList.insertAll(1, [childs[1], childs[2]]);
-        dataList[0]['name'] = 'John Doe';
-        dataList[1]['name'] = 'Mills';
-        dataList[2]['name'] = 'Somerset';
-        dataList[3]['name'] = 'Tracy';
-
-        // then
-        dataList.onChange.listen(expectAsync1((ChangeSet event) {
-          expect(event.changedItems[0].addedItems, equals(['name']));
-          expect(event.changedItems[1].addedItems, equals(['name']));
-          expect(event.changedItems[2].addedItems, equals(['name']));
-          expect(event.changedItems[3].addedItems, equals(['name']));
-        }));
-      });*/
 
       test('do not listen to removedAt children changes.', () {
         // given
@@ -1038,38 +1027,7 @@ void main() {
         });
       });
 
-      test('do not listen after removeAll multiple children with removeRange.', () {
-        // given
-        var child1 = new Data();
-        var child3 = new Data();
-        DataList dataList = new DataList.from([new Data(), child1, new Data(), child3, new Data()]);
-        var onRemove = new Mock();
-        var onChange = new Mock();
-        dataList.onChangeSync.listen((event) => onRemove.handler(event));
-
-        // when
-        dataList.removeAll([1,3], author: 'John Doe');
-
-        // then
-        var future = new Future.delayed(new Duration(milliseconds: 20), () {
-          dataList.onChangeSync.listen((e) => onChange(e));
-          child1['name'] = 'John Doe';
-          child3['name'] = 'Mills';
-        });
-
-        future.then((_) {
-          onChange.getLogs().verify(neverHappened);
-        });
-
-        // but async onChange drops information about changes in removed items.
-        dataList.onChange.listen(expectAsync1((changeSet) {
-          expect(changeSet.removedItems, orderedEquals([1,3]));
-          expect(changeSet.addedItems.isEmpty, isTrue);
-          expect(changeSet.changedItems.isEmpty, isTrue);
-        }));
-      });
-
-      test('when child Data is added then removed, no changes are broadcasted. (T18)', () {
+      test('when DataMap is added then removed, no changes are broadcasted. (T18)', () {
         // given
         DataList dataList = new DataList();
         var child = new Data();
@@ -1082,7 +1040,7 @@ void main() {
         dataList.onChange.listen(protectAsync1((e) => expect(true, isFalse)));
       });
 
-      test('when child Data is removed then added, this is a change.', () {
+      test('when DataMap is removed then added, this is a change.', () {
         // given
         var childOld = new Data();
         var childNew = new Data();
@@ -1106,7 +1064,7 @@ void main() {
         }));
       });
 
-      test('when child Data is removed then added, only one subscription remains.', () {
+      test('when DataMap is removed then added, only one subscription remains.', () {
         // given
         var child = new Data();
         DataList dataList = new DataList.from([new Data()]);
@@ -1128,7 +1086,7 @@ void main() {
       });
     });
 
-    //Testing only part of functionality
+    //Testing only part of functionality as it should work if DatMap works
     group('(Nested DataList)', () {
       test('listens to changes of its children.', () {
         // given
@@ -1150,7 +1108,7 @@ void main() {
         var onChange = new Mock();
 
         // when
-        dataList.remove(0);
+        dataList.removeAt(0);
         var future = new Future.delayed(new Duration(milliseconds: 20), () {
           dataList.onChangeSync.listen((e) => onChange(e));
           child.add('John Doe');
@@ -1181,6 +1139,6 @@ void main() {
           onChange.getLogs().verify(neverHappened);
         });
       });
-    }); */
+    });
  });
 }
