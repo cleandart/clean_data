@@ -60,7 +60,7 @@ void main() {
       expect(everyKthMonth, unorderedEquals([june, december]));
     });
     
-    test('change filter to filter with args. (T04)', () {
+    test('change filter to filter with args. (T05)', () {
       // given
       DataReference k = new DataReference(2);
       FilteredCollectionView everySecondMonth = months.liveWhere((month) => month['number'] % 4 == 0);
