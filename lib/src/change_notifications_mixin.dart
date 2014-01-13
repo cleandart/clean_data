@@ -86,10 +86,17 @@ abstract class ChangeNotificationsMixin {
    * Streams all new changes marked in [changeSet].
    */
   void _onBeforeNotify() {}
-
-  void _notify({author: null}) {
+  
+  beforeAdd(ChangeSet changeSet, String single) {
+    if(single != null) {
+      return changeSet.changedItems[single];
+    }
+    else return changeSet;
+  }
+  
+  void _notify({author: null, String single: null}) {
     if (!_changeSetSync.isEmpty) {
-      _onChangeSyncController.add({'author': author, 'change': _changeSetSync});
+      _onChangeSyncController.add({'author': author, 'change': beforeAdd(_changeSetSync, single)});
       _clearChangesSync();
     }
 
@@ -99,7 +106,7 @@ abstract class ChangeNotificationsMixin {
         _onBeforeNotify();
 
         if (!_changeSet.isEmpty) {
-          _onChangeController.add(_changeSet);
+          _onChangeController.add(beforeAdd(_changeSet, single));
           _clearChanges();
         }
       }
