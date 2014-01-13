@@ -11,11 +11,12 @@ abstract class ChangeNotificationsMixin {
   final StreamController<Map> _onChangeSyncController =
       new StreamController.broadcast(sync: true);
 
-  get __change;
-  get __changeSync;
-  _clearChanges();
-  _clearChangesSync();
+  get __change => null;
+  get __changeSync => null;
+  _clearChanges() {}
+  _clearChangesSync() {}
   void _onBeforeNotify() {}
+  void _markChanged(key, change) {}
 
 
   /**

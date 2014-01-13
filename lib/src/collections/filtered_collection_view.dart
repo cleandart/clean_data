@@ -36,12 +36,12 @@ abstract class FilteredCollectionBase extends TransformedDataCollection {
       }
 
       if (!shouldBeContained) {
-        _markRemoved(dataObj, _ref[dataObj]);
+        _markRemoved(dataObj, new DataReference(dataObj));
         _data.remove(dataObj);
       }
 
     } else if(shouldBeContained) {
-        _markAdded(dataObj, _ref[dataObj]);
+        _markAdded(dataObj, new DataReference(dataObj));
         _data.add(dataObj);
     }
   }
@@ -53,16 +53,38 @@ abstract class FilteredCollectionBase extends TransformedDataCollection {
  */
 class FilteredCollectionView extends FilteredCollectionBase {
 
-  final _filter;
-
+  dynamic _filter;
+  ChangeNotificationsMixin _args;
+  StreamSubscription subscribtion = null;
   /**
    * Creates a new filtered data collection from [source], using [filter].
    */
   FilteredCollectionView(DataCollectionView source,
-      DataTestFunction this._filter): super([source]);
+      this._filter, [ChangeNotificationsMixin this._args = null]): super([source]) {
+    if(_args != null) subscribtion = _args.onChangeSync.listen((_) {
+      changeFilter(this._filter, _args);
+    });
+  }
 
-  bool _shouldContain(dataObj) => sources[0].contains(dataObj) &&
-      _filter(dataObj);
+  bool _shouldContain(dataObj) => sources[0].contains(dataObj) && 
+      ((this._args == null && _filter(dataObj)) || 
+          (this._args != null && _filter(dataObj, this._args)));
+  
+  changeFilter(newFilter, [ChangeNotificationsMixin newArgs = null]) {
+    if(newArgs != _args) {
+      if(subscribtion != null) subscribtion.cancel();
+      if(_args != null) {
+        subscribtion = _args.onChangeSync.listen((_) {
+          changeFilter(this._filter, _args);
+        });
+      }
+    }
+    _args = newArgs;
+    _filter = newFilter;
+    for(var item in sources[0]) _treatItem(item, null);
+        
+    _notify();
+  }
 }
 
 /**

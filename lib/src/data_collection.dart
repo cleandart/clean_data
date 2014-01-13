@@ -148,8 +148,8 @@ abstract class DataCollectionView extends Object
    * The collection remains up-to-date w.r.t. to the source collection via
    * background synchronization.
    */
-  DataCollectionView liveWhere(DataTestFunction test) {
-   return new FilteredCollectionView(this, test);
+  DataCollectionView liveWhere(test, [args = null]) {
+   return new FilteredCollectionView(this, test, args);
   }
 
 
@@ -268,6 +268,7 @@ class DataCollection  extends DataCollectionView
     toBeRemoved.forEach((data) {
       if(_data.contains(data)){
         _markRemoved(data, _ref[data]);
+        _ref.remove(data);
         if(data is ChangeNotificationsMixin)
           _removeOnDataChangeListener(data);
       }
