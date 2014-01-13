@@ -13,7 +13,7 @@ class DataList extends Object with ChangeNotificationsMixin, ChangeChildNotifica
   get length => _length;
   set length(newLen) {
     _length = newLen;
-    _notify(author: author);
+    _notify();
   }
   
   get _length => list.length;

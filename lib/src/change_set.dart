@@ -14,6 +14,7 @@ class _Undefined {
   String toString(){
     return type;
   }
+  
 }
 
 const undefined = const _Undefined('undefined');
@@ -81,7 +82,7 @@ class Change {
     if (change.isEmpty) {
       return;
     }
-    assert(isEmpty || change.oldValue == this.newValue);
+    assert(isEmpty || change.oldValue == this.newValue || change.oldValue.value == this.newValue.value);
     if (isEmpty) {
       oldValue = change.oldValue;
       oldDereferencedValue = change.oldDereferencedValue;
