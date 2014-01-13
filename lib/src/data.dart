@@ -6,15 +6,15 @@ part of clean_data;
 
 //TODO consider moving mixin to separate file
 
-abstract class DataView extends Object with ChangeNotificationsMixin {
+abstract class DataView extends Object with ChangeNotificationsMixin, ChangeChildNotificationsMixin {
 
-  final Map _fields = new Map();
+  final Map<String, DataReference> _fields = new Map();
   /**
    * Returns the value for the given key or null if key is not in the data object.
    * Because null values are supported, one should use containsKey to
    * distinguish between an absent key and a null value.
    */
-  dynamic operator[](key) => _fields[key];
+  dynamic operator[](key) => _fields[key].value;
 
   /**
    * Returns true if there is no {key, value} pair in the data object.
@@ -40,7 +40,7 @@ abstract class DataView extends Object with ChangeNotificationsMixin {
    * The values of [Data].
    */
   Iterable get values {
-    return _fields.values;
+    return _fields.values.map((DataReference ref) => ref.value);
   }
 
   /**
@@ -58,7 +58,11 @@ abstract class DataView extends Object with ChangeNotificationsMixin {
   }
 
   bool containsValue(Object value) {
-    return _fields.containsValue(value);
+    bool contains = false;
+    _fields.forEach((K, V) {
+      if(V.value == value) contains = true;
+    });
+    return contains;
   }
   /**
    * Converts to Map.
@@ -115,20 +119,13 @@ class Data extends DataView with DataChangeListenersMixin<String> implements Map
   void addAll(Map other, {author: null}) {
     other.forEach((key, value) {
       if (_fields.containsKey(key)) {
-        _markChanged(key, new Change(_fields[key], value));
-        if(_fields[key] is DataView){
-          _removeOnDataChangeListener(key);
-        }
+        _fields[key].changeValue(value, author: author);
       } else {
-        _markChanged(key, new Change(null, value));
-        _markAdded(key);
+        DataReference ref = new DataReference(value);
+        _markAdded(key, ref);
+        _addOnDataChangeListener(key, ref);
+        _fields[key] = ref;
       }
-
-      if(value is DataView){
-        _addOnDataChangeListener(key, value);
-      }
-
-      _fields[key] = value;
     });
     _notify(author: author);
   }
@@ -138,7 +135,6 @@ class Data extends DataView with DataChangeListenersMixin<String> implements Map
    */
   void operator[]=(String key, value) {
     add(key, value);
-    _notify();
   }
 
   /**
@@ -153,12 +149,9 @@ class Data extends DataView with DataChangeListenersMixin<String> implements Map
    */
   void removeAll(List<String> keys, {author: null}) {
     for (var key in keys) {
-      _markChanged(key, new Change(_fields[key], null));
-      _markRemoved(key);
+      _markRemoved(key, _fields[key]);
 
-      if(_fields[key] is DataView){
-        _removeOnDataChangeListener(key);
-      }
+      _removeOnDataChangeListener(key);
 
       _fields.remove(key);
     }
@@ -170,7 +163,11 @@ class Data extends DataView with DataChangeListenersMixin<String> implements Map
   }
 
   void forEach(void f(key, value)) {
-    _fields.forEach(f);
+    _fields.forEach((K, V) => f(K, V.value));
+  }
+
+  DataReference ref(String key) {
+    return _fields[key];
   }
 
   putIfAbsent(key, ifAbsent()) {
