@@ -13,11 +13,11 @@
  *   that does the work of grouping multiple changes that occured during
  *   execution to single [ChangeSet] fired in the next event loop.
  *
- * * __Data__: Data are stored using a [Map] compatible instances of class
- *   [Data].
+ * * __DataMap__: Data are stored using a [Map] compatible instances of class
+ *   [DataMap].
  *
- * * __Collection__: Multiple data objects can be stored and manipulated using
- *   the instance of [DataCollection] class. [DataCollection] behave similarly
+ * * __DataSet__: Multiple data objects can be stored and manipulated using
+ *   the instance of [DataSet] class. [DataSet] behave similarly
  *   to [Set], each object can be contained at most once and no order is
  *   guaranteed.
  *
@@ -32,7 +32,7 @@
  *
  *     import 'package:clean_data/clean_data.dart';
  *     void main() {
- *       var person = new Data.from({"name": "John"});
+ *       var person = new DataMap.from({"name": "John"});
  *       person.onChange.listen((changeSet) => print("Person has changed!"));
  *
  *       person['surname'] = 'Doe';
@@ -46,15 +46,15 @@
  * Notice that despite of two changes happened, we only one notification was
  * fired.
  *
- * Create simple collection and listen to its changes:
+ * Create simple set and listen to its changes:
  *
- *     import 'package:clean_data/clean_data.dar';
+ *     import 'package:clean_data/clean_data.dart';
  *     void main() {
- *       var colleagues = new DataCollection();
+ *       var colleagues = new DataSet();
  *       colleagues.onChange.listen((changeSet) => print("Team has changed!"));
  *
- *       colleagues.add(new Data.from({"name": "John"}));
- *       colleagues.add(new Data.from({"name": "Peter"}));
+ *       colleagues.add(new DataMap.from({"name": "John"}));
+ *       colleagues.add(new DataMap.from({"name": "Peter"}));
  *
  *     }
  *
@@ -64,14 +64,14 @@
  *
  * Similarly to previous example, only one notification was fired.
  *
- * Our collection also listens to changes in its underlying data objects:
+ * Our set also listens to changes in its underlying data objects:
  *
- *     import 'package:clean_data/clean_data.dar';
+ *     import 'package:clean_data/clean_data.dart';
  *     void main() {
- *       var john = new Data.from({"name": "John"});
- *       var peter = new Data.from({"name": "Peter"});
+ *       var john = new DataMap.from({"name": "John"});
+ *       var peter = new DataMap.from({"name": "Peter"});
  *
- *       var colleagues = new DataCollection.from([john, peter]);
+ *       var colleagues = new DataSet.from([john, peter]);
  *       colleagues.onChange.listen((changeSet) => print("Team has changed!"));
  *
  *       john['surname'] = 'Doe';
@@ -90,14 +90,16 @@ library clean_data;
 import "dart:core";
 import "dart:async";
 import "dart:collection";
+import "dart:math";
 
-part 'src/data.dart';
-part 'src/data_collection.dart';
+part 'src/data_map.dart';
+part 'src/data_set.dart';
 part 'src/data_reference.dart';
+part 'src/data_list.dart';
 part 'src/change_set.dart';
 
-part 'src/collections/transformed_collection_view.dart';
-part 'src/collections/filtered_collection_view.dart';
+part 'src/sets/transformed_set_view.dart';
+part 'src/sets/filtered_set_view.dart';
 
 part 'src/hash_index.dart';
 part 'src/data_change_listeners_mixin.dart';

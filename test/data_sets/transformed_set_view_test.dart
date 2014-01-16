@@ -2,19 +2,22 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library transformed_collection_view_test;
+library transformed_set_view_test;
 
 import 'package:unittest/unittest.dart';
 import '../months.dart';
 import 'package:clean_data/clean_data.dart';
 
 void main() {
+  var conf = unittestConfiguration;
+  conf.timeout = new Duration(seconds: 2);
+  unittestConfiguration = conf;
 
-  group('(TransformedDataCollection)', () {
+  group('(TransformedDataSet)', () {
 
     setUp(() => setUpMonths());
 
-    test('Excepted collection reacts to source object changes with a change'
+    test('Excepted set reacts to source object changes with a change'
          ' event. (T01)', () {
 
       // given
@@ -32,12 +35,12 @@ void main() {
       }));
     });
 
-    test('excepted collection reacts to change of the first source collection.'
+    test('excepted set reacts to change of the first source set.'
          ' (T02)', () {
 
       // given
       var excepted = months.liveDifference(evenMonths);
-      var fantasyMonth = new Data.from(
+      var fantasyMonth = new DataMap.from(
           {"name": "FantasyMonth", "days": 13, "number": 13});
 
       // when
@@ -45,13 +48,13 @@ void main() {
 
       // then
       excepted.onChange.listen(expectAsync1((ChangeSet event) {
-        expect(event.changedItems.isEmpty, isTrue);
+        expect(event.strictlyChanged.isEmpty, isTrue);
         expect(event.removedItems.isEmpty, isTrue);
         expect(event.addedItems, equals([fantasyMonth]));
       }));
     });
 
-    test('excepted collection reacts to change of the second source collection.'
+    test('excepted set reacts to change of the second source set.'
          ' (T03)', () {
 
       // given
@@ -62,13 +65,13 @@ void main() {
 
       //then
       excepted.onChange.listen(expectAsync1((ChangeSet event) {
-        expect(event.changedItems.isEmpty, isTrue);
+        expect(event.strictlyChanged.isEmpty, isTrue);
         expect(event.addedItems.isEmpty, isTrue);
         expect(event.removedItems, equals([january]));
       }));
     });
 
-    test('changing a data object in the source collection. (T04)', () {
+    test('changing a data object in the source set. (T04)', () {
       // given
       var evenMonths = months.liveWhere((month) => month['number'] % 2 == 0);
 
@@ -78,14 +81,14 @@ void main() {
       // then
       evenMonths.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.addedItems, unorderedEquals([january]));
-        expect(event.changedItems.isEmpty, isTrue);
+        expect(event.strictlyChanged.isEmpty, isTrue);
         expect(event.removedItems.isEmpty, isTrue);
         expect(evenMonths, unorderedEquals([january, february, april, june,
                                             august, october, december]));
       }));
     });
 
-    test('changing a data object in the filtered collection (T05)', () {
+    test('changing a data object in the filtered set (T05)', () {
       // given
       var evenMonths = months.liveWhere((month) => month['number'] % 2 == 0);
 
@@ -95,7 +98,7 @@ void main() {
       // then
       evenMonths.onChange.listen(expectAsync1((ChangeSet event) {
         expect(event.removedItems, unorderedEquals([february]));
-        expect(event.changedItems.isEmpty, isTrue);
+        expect(event.strictlyChanged.isEmpty, isTrue);
         expect(event.addedItems.isEmpty, isTrue);
         expect(evenMonths, unorderedEquals([april, june, august, october,
                                             december]));
@@ -105,7 +108,7 @@ void main() {
     test('adding and removing an object does not raise an event. (T06)', () {
       // given
       var excepted = months.liveDifference(evenMonths);
-      var fantasyMonth = new Data.from(
+      var fantasyMonth = new DataMap.from(
           {"name": "FantasyMonth", "days": 13, "number": 13});
 
       // when
@@ -113,10 +116,13 @@ void main() {
       months.remove(fantasyMonth);
 
       // then
-      excepted.onChange.listen((c) => expect(true, isFalse));
+      excepted.onChange.listen(expectAsync1((ChangeSet changeSet) {
+        expect(changeSet.equals(new ChangeSet({fantasyMonth: new Change(undefined, undefined)})),
+            isTrue);
+      }));
     });
 
-    test('removal, change and add is broadcasted as change (T07)', () {
+    test('removal, change and add is broadcasted (T07)', () {
       // given
       var excepted = months.liveDifference(evenMonths);
 
@@ -137,34 +143,34 @@ void main() {
 
       // given
       var excepted = months.liveDifference(evenMonths);
-      var fantasyMonth = new Data.from(
+      var fantasyMonth = new DataMap.from(
           {"name": "FantasyMonth", "days": 13, "number": 13});
 
-      // when
-      months.add(fantasyMonth);
-
       // then
-      excepted.onBeforeAdd.listen(expectAsync1((DataView d) {
+      excepted.onBeforeAdd.listen(expectAsync1((DataMapView d) {
           expect(d, equals(fantasyMonth));
           expect(excepted.contains(fantasyMonth), isFalse);
       }));
+
+      // when
+      months.add(fantasyMonth);
     });
 
     test('onBeforeRemove is fired before object is removed. (T09)', () {
       // given
       var excepted = months.liveDifference(evenMonths);
 
-      // when
-      months.remove(january);
-
       // then
-      excepted.onBeforeRemove.listen(expectAsync1((DataView d) {
+      excepted.onBeforeRemove.listen(expectAsync1((DataMapView d) {
           expect(d, equals(january));
           expect(excepted.contains(january), isTrue);
       }));
+
+      // when
+      months.remove(january);
     });
 
-    test('onChangeSync on derived collections  (T10)', () {
+    test('onChangeSync on derived sets  (T10)', () {
       // given
       var evenMonths = months.liveWhere((month) => month['number'] % 2 == 0);
       evenMonths.onChangeSync.listen(expectAsync1((changeSet) {}));
@@ -188,6 +194,54 @@ void main() {
       february['number'] = 13;
     });
 
+    // TODO what is this?
+    test('is working properly with non DataView elements.', () {
+      // given
+      var SpringSet = new DataSet.from([march, april, may]),
+          SummerSet = new DataSet.from([june, july, august]),
+          AutumnSet = new DataSet.from([september, october, november]),
+          WinterSet = new DataSet.from([december, january, february]),
+          seasons = new DataSet.from([SpringSet, SummerSet,
+                                             AutumnSet, WinterSet]);
 
+      var warmSeasons = new DataSet.from([SpringSet, SummerSet]);
+      var coldSeasons = new DataSet.from([AutumnSet, WinterSet]);
+      var windySeasons = new DataSet.from([AutumnSet]);
+
+      // when
+      var except = seasons.liveDifference(warmSeasons);
+      expect(except, unorderedEquals(coldSeasons));
+
+      var union = warmSeasons.liveUnion(coldSeasons);
+      expect(union, unorderedEquals(seasons));
+
+      var intersection = coldSeasons.liveIntersection(windySeasons);
+      expect(intersection, unorderedEquals([AutumnSet]));
+
+      var where = seasons.where(
+          (seasons) => seasons.fold(0, (prev, DataMap month) => prev + month['days']) == 92);
+      expect(where, unorderedEquals([SummerSet, SpringSet]));
+    });
+
+    test('is working properly with non listenable elements.', () {
+      var seasons = new DataSet.from(['spring', 'summer', 'autumn', 'winter']);
+      var warmSeasons = new DataSet.from(['spring', 'summer']);
+      var coldSeasons = new DataSet.from(['autumn', 'winter']);
+      var windySeasons = new DataSet.from(['autumn']);
+
+      // when
+      var except = seasons.liveDifference(warmSeasons);
+      expect(except, unorderedEquals(coldSeasons));
+
+      var union = warmSeasons.liveUnion(coldSeasons);
+      expect(union, unorderedEquals(seasons));
+
+      var intersection = coldSeasons.liveIntersection(windySeasons);
+      expect(intersection, unorderedEquals(['autumn']));
+
+      var where = seasons.where(
+          (seasons) => seasons.startsWith('s'));
+      expect(where, unorderedEquals(['summer', 'spring']));
+    });
   });
 }

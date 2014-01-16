@@ -4,6 +4,7 @@
 
 part of clean_data;
 
+
 class _Undefined {
 
   final String type;
@@ -33,19 +34,15 @@ class Change {
    * Creates new [Change] from information about the value before change
    * [oldValue] and after the change [newValue].
    */
-  Change([this.oldValue = unset, this.newValue = unset]);
+  Change([this.oldValue = unset, this.newValue = unset]){
+    assert(oldValue is! DataReference);
+    assert(newValue is! DataReference);
+  }
 
   bool equals(dynamic other) {
-    dereference(value) {
-      while (value is DataReference){
-        value = value.value;
-      }
-      return value;
-    }
-
     if (other is Change){
-      return dereference(oldValue) == dereference(other.oldValue) &&
-             dereference(newValue) == dereference(other.newValue);
+      return oldValue == other.oldValue &&
+             newValue == other.newValue;
     } else {
       return false;
     }
@@ -91,6 +88,7 @@ class ChangeSet {
   /**
    * Creates an empty [ChangeSet].
    */
+
   ChangeSet([Map changedItems = const {}]) {
     this.changedItems = new Map.from(changedItems);
   }
@@ -103,7 +101,6 @@ class ChangeSet {
       changedItems[key] = change.clone();
     });
   }
-
   bool equals (dynamic other) {
     if (other is ChangeSet){
       if (this.changedItems.keys.length != other.changedItems.keys.length) return false;
@@ -123,7 +120,6 @@ class ChangeSet {
     }
   }
 
-
   /**
    * Clone changeSet.
    */
@@ -142,8 +138,8 @@ class ChangeSet {
     markChanged(key, new Change(value, undefined));
   }
 
-  get addedItems {
-    var res = [];
+  Set get addedItems {
+    var res = new Set();
     changedItems.forEach((key, dynamic change){
       if(change is Change && change.oldValue == undefined){
         res.add(key);
@@ -152,8 +148,8 @@ class ChangeSet {
     return res;
   }
 
-  get removedItems {
-    var res = [];
+  Set get removedItems {
+    var res = new Set();
     changedItems.forEach((key, dynamic change){
       if(change is Change && change.newValue == undefined){
         res.add(key);
@@ -162,16 +158,37 @@ class ChangeSet {
     return res;
   }
 
+  get strictlyChanged {
+    var res = {};
+    changedItems.forEach((key, dynamic change) {
+      if(change is ChangeSet)
+        res[key] = change;
+    });
+    return res;
+  }
+
   /**
    * Marks all the changes in [ChangeSet] or [Change] for a
    * given [dataObj].
    */
-  void markChanged(dynamic key, changeSet) {
-    if (changedItems.containsKey(key)){
-      changedItems[key].mergeIn(changeSet);
-    } else {
-      changedItems[key] = changeSet.clone();
+
+  void markChanged(dynamic key, change) {
+    bool contains = changedItems.containsKey(key);
+    bool oldIsChangeSet = contains && changedItems[key] is ChangeSet;
+    bool newIsChangeSet = change is ChangeSet;
+    bool oldIsChange = !oldIsChangeSet;
+    bool newIsChange = !newIsChangeSet;
+
+    if (!contains || oldIsChangeSet && newIsChange) {
+      changedItems[key] = change.clone();
+      return;
     }
+    if (oldIsChange || oldIsChangeSet && newIsChangeSet){
+      changedItems[key].mergeIn(change);
+      return;
+    }
+    // previous ifs should contain all possible cases
+    assert(false);
   }
 
   /**
@@ -188,7 +205,6 @@ class ChangeSet {
    */
   bool get isEmpty =>
     this.changedItems.isEmpty;
-
 
   String toString() {
     return 'ChangeSet(${changedItems.toString()})';

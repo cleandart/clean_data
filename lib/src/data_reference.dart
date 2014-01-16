@@ -14,6 +14,7 @@ class DataReference extends Object with ChangeNotificationsMixin, ChangeValueNot
    * Encapsulated value
    */
   dynamic _value;
+
   StreamSubscription _onDataChangeListener, _onDataChangeSyncListener;
 
   /**
@@ -29,8 +30,9 @@ class DataReference extends Object with ChangeNotificationsMixin, ChangeValueNot
   }
 
   changeValue(newValue, {author: null}) {
+    assert(newValue is! DataReference);
+    _markChanged(this._value, newValue);
     _value = newValue;
-    _markChanged(this, this);
 
     if(_onDataChangeListener != null) {
       _onDataChangeListener.cancel();
@@ -48,9 +50,10 @@ class DataReference extends Object with ChangeNotificationsMixin, ChangeValueNot
       _onDataChangeListener = newValue.onChange.listen((changeEvent) {
         _onChangeController.add(changeEvent);
       });
+
     }
 
-    _notify();
+    _notify(author: author);
   }
 
   /**
@@ -60,6 +63,12 @@ class DataReference extends Object with ChangeNotificationsMixin, ChangeValueNot
     changeValue(value);
     _clearChanges();
     _clearChangesSync();
+  }
+
+  void dispose() {
+    _dispose();
+    _onDataChangeListener.cancel();
+    _onDataChangeSyncListener.cancel();
   }
 
   String toString() => 'Ref(${_value.toString()})';

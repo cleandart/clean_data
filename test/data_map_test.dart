@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library data_test;
+library data_map_test;
 
 import 'package:unittest/unittest.dart';
 import 'package:clean_data/clean_data.dart';
@@ -17,7 +17,7 @@ void main() {
     test('initialize. (T01)', () {
 
       // when
-      var data = new Data();
+      var data = new DataMap();
 
       // then
       expect(data.isEmpty, isTrue);
@@ -34,7 +34,7 @@ void main() {
       };
 
       // when
-      var dataObj = new Data.from(data);
+      var dataObj = new DataMap.from(data);
 
       // then
       expect(dataObj.isEmpty, isFalse);
@@ -49,7 +49,7 @@ void main() {
 
     test('is accessed like a map. (T03)', () {
       // given
-      var dataObj =  new Data();
+      var dataObj =  new DataMap();
 
       // when
       dataObj['key'] = 'value';
@@ -61,7 +61,7 @@ void main() {
     test('remove multiple keys. (T04)', () {
       // given
       var data = {'key1': 'value1', 'key2': 'value2', 'key3': 'value3'};
-      var dataObj = new Data.from(data);
+      var dataObj = new DataMap.from(data);
 
       // when
       dataObj.removeAll(['key1', 'key2']);
@@ -73,7 +73,7 @@ void main() {
     test('add multiple items. (T05)', () {
       // given
       var data = {'key1': 'value1', 'key2': 'value2', 'key3': 'value3'};
-      var dataObj = new Data();
+      var dataObj = new DataMap();
 
       // when
       dataObj.addAll(data);
@@ -89,7 +89,7 @@ void main() {
       // given
       var data = {'key1': 'value1', 'key2': 'value2', 'key3': 'value3'};
       var keysToRemove = ['key1', 'key2'];
-      var dataObj = new Data.from(data);
+      var dataObj = new DataMap.from(data);
       var mock = new Mock();
       dataObj.onChangeSync.listen((event) => mock.handler(event));
 
@@ -115,7 +115,7 @@ void main() {
     test('listen on multiple keys added. (T07)', () {
       // given
       var data = {'key1': 'value1', 'key2': 'value2', 'key3': 'value3'};
-      var dataObj = new Data();
+      var dataObj = new DataMap();
       var mock = new Mock();
       dataObj.onChangeSync.listen((event) => mock.handler(event));
 
@@ -143,7 +143,7 @@ void main() {
 
     test('listen on {key, value} added. (T08)', () {
       // given
-      var dataObj = new Data();
+      var dataObj = new DataMap();
 
       // when
       dataObj['key'] = 'value';
@@ -158,7 +158,7 @@ void main() {
 
     test('listen synchronously on {key, value} added. (T09)', () {
       // given
-      var dataObj = new Data();
+      var dataObj = new DataMap();
       var mock = new Mock();
       dataObj.onChangeSync.listen((event) => mock.handler(event));
 
@@ -175,7 +175,7 @@ void main() {
 
     test('listen synchronously on multiple {key, value} added. (T10)', () {
       // given
-      var dataObj = new Data();
+      var dataObj = new DataMap();
       var mock = new Mock();
       dataObj.onChangeSync.listen((event) => mock.handler(event));
 
@@ -194,7 +194,7 @@ void main() {
     test('listen on {key, value} removed. (T11)', () {
       // given
       var data = {'key': 'value'};
-      var dataObj = new Data.from(data);
+      var dataObj = new DataMap.from(data);
 
       // when
       dataObj.remove('key');
@@ -209,7 +209,7 @@ void main() {
 
     test('listen synchronously on {key, value} removed. (T12)', () {
       // given
-      var dataObj = new Data.from({'key': 'value'});
+      var dataObj = new DataMap.from({'key': 'value'});
       var mock = new Mock();
       dataObj.onChangeSync.listen((event) => mock.handler(event));
 
@@ -229,7 +229,7 @@ void main() {
     test('listen on {key, value} changed. (T13)', () {
       // given
       var data = {'key': 'oldValue'};
-      var dataObj = new Data.from(data);
+      var dataObj = new DataMap.from(data);
 
       // when
       dataObj['key'] = 'newValue';
@@ -237,14 +237,14 @@ void main() {
       // then
       dataObj.onChange.listen(expectAsync1((ChangeSet event) {
         var ref = dataObj.ref('key');
-        expect(event.equals(new ChangeSet({'key': new Change(ref, ref)})), isTrue);
+        expect(event.equals(new ChangeSet({'key': new Change('oldValue', 'newValue')})), isTrue);
       }));
     });
 
     test('propagate multiple changes in single [ChangeSet]. (T14)', () {
       // given
       var data = {'key1': 'value1', 'key2': 'value2'};
-      var dataObj = new Data.from(data);
+      var dataObj = new DataMap.from(data);
 
       // when
       dataObj['key1'] = 'newValue1';
@@ -262,7 +262,7 @@ void main() {
     test('when property is added then changed, only addition is in the [ChangeSet]. (T15)', () {
       // given
       var data = {'key1': 'value1', 'key2': 'value2'};
-      var dataObj = new Data.from(data);
+      var dataObj = new DataMap.from(data);
 
       // when
       dataObj['key3'] = 'John Doe';
@@ -278,7 +278,7 @@ void main() {
     test('when existing property is removed then re-added, this is a change. (T16)', () {
       // given
       var data = {'key1': 'value1', 'key2': 'value2'};
-      var dataObj = new Data.from(data);
+      var dataObj = new DataMap.from(data);
 
       // when
       dataObj.remove('key1');
@@ -286,21 +286,16 @@ void main() {
 
       // then
       dataObj.onChange.listen(expectAsync1((ChangeSet event) {
-        expect(event.changedItems.keys, unorderedEquals(['key1']));
-
-        Change change = event.changedItems['key1'];
-        expect(change.oldValue.value, equals('value1'));
-        expect(change.newValue.value, equals('John Doe II.'));
-
-        expect(event.addedItems, unorderedEquals([]));
-        expect(event.removedItems, unorderedEquals([]));
+        expect(event.equals(new ChangeSet(
+            {'key1': new Change('value1', 'John Doe II.')}))
+        , isTrue);
       }));
     });
 
     test('when property is changed then removed, only deletion is in the [ChangeSet]. (T17)', () {
       // given
       var data = {'key1': 'value1', 'key2': 'value2'};
-      var dataObj = new Data.from(data);
+      var dataObj = new DataMap.from(data);
 
       dataObj['key1'] = 'John Doe';
 
@@ -316,7 +311,7 @@ void main() {
     test('when property is added then removed, no changes are broadcasted. (T18)', () {
       // given
       var data = {'key1': 'value1', 'key2': 'value2'};
-      var dataObj = new Data.from(data);
+      var dataObj = new DataMap.from(data);
 
       // when
       dataObj['key3'] = 'John Doe';
@@ -332,7 +327,7 @@ void main() {
     test('Data implements map.clear(). (T20)', () {
       // given
       var data = {'key1': 'value1', 'key2': 'value2'};
-      var dataObj = new Data.from(data);
+      var dataObj = new DataMap.from(data);
       var mock = new Mock();
       dataObj.onChangeSync.listen((event) => mock.handler(event));
 
@@ -355,7 +350,7 @@ void main() {
       var data = {'key1': 'value1', 'key2': 'value2'};
 
       // when
-      var dataObj = new Data.from(data);
+      var dataObj = new DataMap.from(data);
 
       // then
       expect(dataObj.containsValue('value1'), isTrue);
@@ -365,8 +360,8 @@ void main() {
     test('Data implements map.forEach(). (T22)', () {
       // given
       var data = {'key1': 'value1', 'key2': 'value2'};
-      var dataObj = new Data.from(data);
-      var dataCopy = new Data();
+      var dataObj = new DataMap.from(data);
+      var dataCopy = new DataMap();
 
       // when
       dataObj.forEach((key, value) {
@@ -380,7 +375,7 @@ void main() {
     test('Data implements map.putIfAbsent(). (T23)', () {
       // given
       Map<String, int> data = {'key1': "value1"};
-      var dataObj = new Data.from(data);
+      var dataObj = new DataMap.from(data);
 
       // when
         dataObj.putIfAbsent('key1', () => '');
@@ -395,12 +390,11 @@ void main() {
     });
   });
 
-
   group('(Nested Data)', () {
 
     test('listens to changes of its children.', () {
       // given
-      var dataObj = new Data.from({'child': new Data()});
+      var dataObj = new DataMap.from({'child': new DataMap()});
 
       // when
       dataObj['child']['name'] = 'John Doe';
@@ -413,9 +407,10 @@ void main() {
 
     test('do not listen to removed children changes.', () {
       // given
-      var child = new Data();
-      var dataObj = new Data.from({'child': child});
+      var child = new DataMap();
+      var dataObj = new DataMap.from({'child': child});
       var onChange = new Mock();
+
 
       // when
       dataObj.remove('child');
@@ -432,9 +427,9 @@ void main() {
 
     test('do not listen to changed children changes.', () {
       // given
-      var childOld = new Data();
-      var childNew = new Data();
-      var dataObj = new Data.from({'child': childOld});
+      var childOld = new DataMap();
+      var childNew = new DataMap();
+      var dataObj = new DataMap.from({'child': childOld});
       var onChange = new Mock();
 
       // when
@@ -452,8 +447,8 @@ void main() {
 
     test('listen on multiple children added.', () {
       // given
-      var data = {'child1': new Data(), 'child2': new Data(), 'child3': new Data()};
-      var dataObj = new Data();
+      var data = {'child1': new DataMap(), 'child2': new DataMap(), 'child3': new DataMap()};
+      var dataObj = new DataMap();
       var mock = new Mock();
       dataObj.onChangeSync.listen((event) => mock.handler(event));
 
@@ -480,11 +475,10 @@ void main() {
 
     test('remove children.', () {
       // given
-      var dataObj = new Data.from({'child1': new Data(), 'child2': new Data(), 'child3': new Data()});
+      var dataObj = new DataMap.from({'child1': new DataMap(), 'child2': new DataMap(), 'child3': new DataMap()});
       List keysToRemove = ['child1', 'child2'];
       var mock = new Mock();
       dataObj.onChangeSync.listen((event) => mock.handler(event));
-
       // when
       dataObj.removeAll(keysToRemove, author: 'John Doe');
 
@@ -504,9 +498,9 @@ void main() {
 
     test('when child Data is removed then added, this is a change.', () {
       // given
-      var childOld = new Data();
-      var childNew = new Data();
-      var dataObj = new Data.from({'child': childOld});
+      var childOld = new DataMap();
+      var childNew = new DataMap();
+      var dataObj = new DataMap.from({'child': childOld});
       var onChange = new Mock();
 
       // when
@@ -515,21 +509,14 @@ void main() {
 
       // then
       dataObj.onChange.listen(expectAsync1((ChangeSet event) {
-        expect(event.changedItems.keys, unorderedEquals(['child']));
-
-        Change change = event.changedItems['child'];
-        expect(change.oldValue.value, equals(childOld));
-        expect(change.newValue.value, equals(childNew));
-
-        expect(event.addedItems, unorderedEquals([]));
-        expect(event.removedItems, unorderedEquals([]));
+        expect(event.equals(new ChangeSet({'child': new Change(childOld, childNew)})), isTrue);
       }));
     });
 
     test('when child Data is removed then added, only one subsription remains.', () {
       // given
-      var child = new Data();
-      var dataObj = new Data.from({'child': child});
+      var child = new DataMap();
+      var dataObj = new DataMap.from({'child': child});
       var onChange = new Mock();
 
       // when
@@ -546,13 +533,24 @@ void main() {
         onChange.getLogs().verify(happenedOnce);
       });
     });
+
+    test('data can be replaced by another data.', () {
+      // given
+      var dataObj = new DataMap.from({'child': new DataMap()});
+
+      // when
+      dataObj['child']['name'] = 'John Doe';
+      dataObj['child'] = new DataMap();
+
+      // then no Error is thrown
+    });
   });
 
   group('(DataReference)', () {
     test('is assigned to elements key. (T1)', () {
       //given
-      var data1 = new Data();
-      var data2 = new Data();
+      var data1 = new DataMap();
+      var data2 = new DataMap();
 
       //when
       data1['key'] = data2;
@@ -565,11 +563,10 @@ void main() {
 
     test('does not change, when changing value. (T2)', () {
       //given
-      var data = new Data();
-      var data1 = new Data();
-      var data2 = new Data();
-
-      //when
+      var data = new DataMap();
+      var data1 = new DataMap();
+      var data2 = new DataMap();
+     //when
       data['key'] = data1;
       DataReference ref1 = data.ref('key');
       data['key'] = data2;
@@ -581,8 +578,8 @@ void main() {
 
     test('is unique for key. (T3)', () {
       //given
-      var data = new Data();
-      var data1 = new Data();
+      var data = new DataMap();
+      var data1 = new DataMap();
 
       //when
       data['key1'] = data1;
@@ -596,14 +593,13 @@ void main() {
 
     test('changes when element is removed and re-added. (T4)', () {
       //given
-      var data = new Data();
-      var data1 = new Data();
+      var data = new DataMap();
+      var data1 = new DataMap();
 
       //when
       data['key'] = data1;
       DataReference ref1 = data.ref('key');
       data.remove('key');
-
       data['key'] = data1;
       DataReference ref2 = data.ref('key');
 
@@ -611,11 +607,11 @@ void main() {
       expect(ref1, isNot(equals(ref2)));
     });
 
-    test('are passed in Change / ChangeSet. (T5)', () {
+    test('are not passed in Change / ChangeSet. (T5)', () {
       // given
-      var childOld = new Data();
-      var childNew = new Data();
-      var dataObj = new Data.from({'child': childOld});
+      var childOld = new DataMap();
+      var childNew = new DataMap();
+      var dataObj = new DataMap.from({'child': childOld});
       var onChange = new Mock();
 
       // when
@@ -629,8 +625,8 @@ void main() {
         expect(event.changedItems.keys, unorderedEquals(['child']));
 
         Change change = event.changedItems['child'];
-        expect(change.oldValue, equals(refOld));
-        expect(change.newValue, equals(refNew));
+        expect(change.oldValue, equals(refOld.value));
+        expect(change.newValue, equals(refNew.value));
       }));
     });
   });
