@@ -5,7 +5,7 @@ import 'package:clean_data/clean_data.dart';
 import 'dart:collection';
 
 main(){
-  group('Cleanify', () {
+  group('(Cleanify)', () {
     test('from Object creates DataReference. (T01)', () {
       var result = cleanify('String');
       expect(result, new isInstanceOf<DataReference>());
@@ -61,13 +61,57 @@ main(){
       expect(result['name'].contains('random'), isTrue);
     });
     
-    test('creates CleanData recursively for Set. (T06)', () {
+    test('creates CleanData recursively for Set. (T07)', () {
       DataSet result = cleanify(new Set.from([{'list': [4, 7]}]));
       
       expect(result, new isInstanceOf<DataSet>());
       expect(result.single, new isInstanceOf<DataMap>());
       
       expect(result.single['list'], unorderedEquals([7, 4]));
+    });
+  });
+  
+  group('(Decleanify)', () {
+    test('from DataReference yields value. (T01)', () {
+      var data = 'String';
+      var result = cleanify(data);
+      expect(decleanify(result), equals(data));
+    });
+    
+    test('DataList makes list. (T02)', () {
+      var result = cleanify(['L', 'I', 'S', 'T']);
+      expect(result, new isInstanceOf<DataList>());
+      expect(result, equals(['L', 'I', 'S', 'T']));
+    });
+    
+    test('from DataMap creates Map. (T03)', () {
+      var data = {'name': 'Princess', 'age': 15};
+      var result = cleanify(data);
+      expect(decleanify(result), equals(data));
+    });
+    
+    test('from DataSet creates Set. (T04)', () {
+      var data = new Set.from([4, 4, 7,9]);
+      var result = cleanify(data);
+      expect(decleanify(result), equals(data));
+    });
+    
+    test('decleanifies DataList recursively. (T05)', () {
+      var data = [{'name': 'Filip'}, {'name': 'Beethoven'}, new Set.from([4,5,7])];
+      var result = cleanify(data);
+      expect(decleanify(result), equals(data));
+    });
+    
+    test('decleanifies DataMap recursively. (T06)', () {
+      var data = {'list': [4, 7], 'name': new Set.from(['random'])};
+      var result = cleanify(data);
+      expect(decleanify(result), equals(data));
+    });
+    
+    test('decleanifies DataSet recursively. (T07)', () {
+      var data = new Set.from([{'list': [4, 7]}]);
+      var result = cleanify(data);
+      expect(decleanify(result), equals(data));
     });
   });
 }

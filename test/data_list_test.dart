@@ -8,35 +8,9 @@ import 'package:unittest/unittest.dart';
 import 'package:clean_data/clean_data.dart';
 import 'package:unittest/mock.dart';
 import 'dart:async';
+import 'matchers.dart' as matchers;
 
-// TODO: write matcher also for ChangeSet, make use of Change.equals and ChangeSet.equals
-
-// TODO: use matchers for matching the exact form of change(Set). This should reduce
-// the number of expect calls to one (in most cases).
-
-class ChangeEquals extends Matcher {
-  Change change;
-  ChangeEquals(this.change) {}
-  bool matches(Change item, Map matchState) {
-    return compare(item.oldValue, change.oldValue) &&
-        compare(item.newValue, change.newValue);
-  }
-
-  bool compare(var a, var b) {
-    if(a is DataReference) a = a.value;
-    if(b is DataReference) b = b.value;
-    return a == b;
-  }
-
-  /** This builds a textual description of the matcher. */
-  Description describe(Description description) {
-    return description.addDescriptionOf(change.toString());
-  }
-
-  Description describeMismatch(item, Description mismatchDescription,
-      Map matchState, bool verbose) => mismatchDescription;
-}
-Matcher changeEquals(Change change) => new ChangeEquals(change);
+var equals = matchers.equals;
 
 void main() {
 
@@ -52,9 +26,7 @@ void main() {
       DataList list = new DataList.from(['one', 'two', 'three']);
 
       list.onChangeSync.listen(expectAsync1((Map event) {
-        var changeSet = event['change'];
-        expect(changeSet.changedItems[3], changeEquals(new Change(undefined, 'four')));
-        expect(changeSet.changedItems.length, equals(1));
+        expect(event['change'], equals(new ChangeSet({3: new Change(undefined, 'four')})));
       }, count: 1));
 
       list.add('four');
@@ -67,9 +39,7 @@ void main() {
       DataList list = new DataList.from(['one', 'two', 'three']);
 
       list.onChangeSync.listen(expectAsync1((Map event) {
-        var changeSet = event['change'];
-        expect(changeSet.changedItems[2], changeEquals(new Change('three', undefined)));
-        expect(changeSet.changedItems.length, equals(1));
+        expect(event['change'], equals(new ChangeSet({2: new Change('three', undefined)})));
       }, count: 1));
 
       list.removeLast();
@@ -82,10 +52,10 @@ void main() {
       DataList list = new DataList.from(['one', 'two', 'three']);
 
       list.onChangeSync.listen(expectAsync1((Map event) {
-        var changeSet = event['change'];
-        expect(changeSet.changedItems.length, equals(2));
-        expect(changeSet.changedItems[1], changeEquals(new Change('two', 'three')));
-        expect(changeSet.changedItems[2], changeEquals(new Change('three', undefined)));
+        expect(event['change'], equals(new ChangeSet({
+          1: new Change('two', 'three'),
+          2: new Change('three', undefined)
+        })));
       }, count: 1));
 
       list.remove('two');
@@ -98,10 +68,10 @@ void main() {
       DataList list = new DataList.from(['one', 'two', 'three']);
 
       list.onChangeSync.listen(expectAsync1((Map event) {
-        var changeSet = event['change'];
-        expect(changeSet.changedItems.length, equals(2));
-        expect(changeSet.changedItems[3], changeEquals(new Change(undefined, 'four')));
-        expect(changeSet.changedItems[4], changeEquals(new Change(undefined, 'five')));
+        expect(event['change'], equals(new ChangeSet({
+          3: new Change(undefined, 'four'),
+          4: new Change(undefined, 'five')
+        })));
       }, count: 1));
 
       list.addAll(['four', 'five']);
@@ -109,7 +79,22 @@ void main() {
       expect(list.length, equals(5));
       expect(list, orderedEquals(['one', 'two', 'three', 'four', 'five']));
     });
+    
+    test('set an item to any index. (T06)', () {
+      DataList list = new DataList.from(['one', 'two', 'three']);
 
+      list.onChangeSync.listen(expectAsync1((Map event) {
+        expect(event['change'], equals(new ChangeSet({
+          2: new Change('three', 'TWO')
+        })));
+      }, count: 1));
+
+      list.set(2, 'TWO', author: 'clean_data');
+
+      expect(list.length, equals(3));
+      expect(list, orderedEquals(['one', 'two', 'TWO']));
+    });
+    
     test('removeWhere (T06)', () {
       // given
       DataList dataList = new DataList.from(['element1','doge', 'doge', 'element4']);
@@ -124,11 +109,11 @@ void main() {
       dataList.removeWhere((el) => el == 'doge');
 
       // then
-      expect(changeSet.equals(new ChangeSet({
-          1: new Change('doge', 'element4'),
-          2: new Change('doge', undefined),
-          3: new Change('element4', undefined)})
-      ), isTrue);
+      expect(changeSet, equals(new ChangeSet({
+        1: new Change('doge', 'element4'),
+        2: new Change('doge', undefined),
+        3: new Change('element4', undefined)
+      })));
 
       expect(dataList, orderedEquals(['element1', 'element4']));
 
@@ -147,11 +132,11 @@ void main() {
 
       // then
 
-      expect(changeSet.equals(new ChangeSet({
+      expect(changeSet, equals(new ChangeSet({
         1: new Change('doge', 'element4'),
         2: new Change('doge', undefined),
         3: new Change('element4', undefined)})
-      ), isTrue);
+      ));
 
       expect(dataList, orderedEquals(
           ['element1', 'element4']));
@@ -198,12 +183,12 @@ void main() {
       list.removeRange(1, 3);
 
       //then
-      expect(changeSet.equals(new ChangeSet({
+      expect(changeSet, equals(new ChangeSet({
         1: new Change('two', 'four'),
         2: new Change('three', 'five'),
         3: new Change('four', undefined),
         4: new Change('five', undefined),
-      })), isTrue);
+      })));
 
       expect(list, orderedEquals(
           ['one', 'four', 'five']));
@@ -215,9 +200,10 @@ void main() {
       var ref2 = list.ref(1);
       var ref3 = list.ref(2);
       list.onChange.listen(expectAsync1((ChangeSet changeSet) {
-        expect(changeSet.changedItems.length, equals(2));
-        expect(changeSet.changedItems[1], changeEquals(new Change('two', 'TWO')));
-        expect(changeSet.changedItems[2], changeEquals(new Change('three', 'THREE')));
+        expect(changeSet, equals(new ChangeSet({
+          1: new Change('two', 'TWO'),
+          2: new Change('three', 'THREE')
+        })));
       }, count: 1));
 
       // when
@@ -231,11 +217,12 @@ void main() {
       DataList list = new DataList.from(['one', 'two', 'three', 'four', 'five']);
 
       list.onChange.listen(expectAsync1((ChangeSet changeSet) {
-        expect(changeSet.changedItems.length, equals(4));
-        expect(changeSet.changedItems[1], changeEquals(new Change('two', 'TWO')));
-        expect(changeSet.changedItems[2], changeEquals(new Change('three', 'THREE')));
-        expect(changeSet.changedItems[3], changeEquals(new Change('four', undefined)));
-        expect(changeSet.changedItems[4], changeEquals(new Change('five', undefined)));
+        expect(changeSet, equals(new ChangeSet({
+          1: new Change('two', 'TWO'),
+          2: new Change('three', 'THREE'),
+          3: new Change('four', undefined),
+          4: new Change('five', undefined)
+        })));
       }, count: 1));
 
       // when
@@ -249,9 +236,10 @@ void main() {
       DataList list = new DataList.from(['one', 'two', 'three', 'five']);
 
       list.onChange.listen(expectAsync1((ChangeSet changeSet) {
-        expect(changeSet.changedItems.length, equals(2));
-        expect(changeSet.changedItems[3], changeEquals(new Change('five', 'four')));
-        expect(changeSet.changedItems[4], changeEquals(new Change(undefined, 'five')));
+        expect(changeSet, equals(new ChangeSet({
+          3: new Change('five', 'four'),
+          4: new Change(undefined, 'five')
+        })));
       }, count: 1));
 
       // when
@@ -265,10 +253,11 @@ void main() {
       DataList list = new DataList.from(['one', 'two', 'five']);
 
       list.onChange.listen(expectAsync1((ChangeSet changeSet) {
-        expect(changeSet.changedItems.length, equals(3));
-        expect(changeSet.changedItems[2], changeEquals(new Change('five', 'three')));
-        expect(changeSet.changedItems[3], changeEquals(new Change(undefined, 'four')));
-        expect(changeSet.changedItems[4], changeEquals(new Change(undefined, 'five')));
+        expect(changeSet, equals(new ChangeSet({
+          2: new Change('five', 'three'),
+          3: new Change(undefined, 'four'),
+          4: new Change(undefined, 'five')
+        })));
       }, count: 1));
 
       // when
@@ -278,7 +267,7 @@ void main() {
     });
 
     group('nested', () {
-      test('listens to changes of its children.', () {
+      test('listens to changes of its children. (T14)', () {
         // given
         DataList dataList = new DataList.from([new DataMap(), new DataMap()]);
 
@@ -288,12 +277,14 @@ void main() {
 
         // then
         dataList.onChange.listen(expectAsync1((ChangeSet event) {
-          expect(event.changedItems[0].addedItems, equals(['name']));
-          expect(event.changedItems[1].addedItems, equals(['name']));
+          expect(event, equals(new ChangeSet({
+            0: new ChangeSet({'name': new Change(undefined, 'John Doe')}),
+            1: new ChangeSet({'name': new Change(undefined, 'Mills')})
+          })));
         }));
       });
 
-      test('do not listen to removed children changes.', () {
+      test('do not listen to removed children changes. (T15)', () {
         // given
         var child = new DataMap();
         DataList dataList = new DataList.from([child]);
@@ -312,7 +303,7 @@ void main() {
         });
       });
 
-      test('do not listen after remove multiple children with removeRange.', () {
+      test('do not listen after remove multiple children with removeRange. (T16)', () {
         // given
         var child1 = new DataMap();
         var child2 = new DataMap();
@@ -337,9 +328,10 @@ void main() {
 
         // but async onChange drops information about changes in removed items.
         dataList.onChange.listen(expectAsync1((changeSet) {
-          expect(changeSet.removedItems, unorderedEquals([1,2]));
-          expect(changeSet.addedItems.isEmpty, isTrue);
-          expect(changeSet.strictlyChanged.isEmpty, isTrue);
+          expect(changeSet, equals(new ChangeSet({
+            1: new Change(child1, undefined), 
+            2: new Change(child2, undefined)            
+          })));
         }));
       });
     });
