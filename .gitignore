@@ -4,3 +4,6 @@ lib/docs/
 pubspec.lock
 *.swp
 .project
+*.js
+*.deps
+*.map
