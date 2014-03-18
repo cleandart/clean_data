@@ -26,7 +26,7 @@
       <file leaf-file-name="data_map.dart" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lib/src/data_map.dart">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="98" column="6" selection-start="2445" selection-end="2445" vertical-scroll-proportion="0.0" vertical-offset="1365" max-vertical-offset="3210">
+            <state line="98" column="6" selection-start="2429" selection-end="2429" vertical-scroll-proportion="0.106275305" vertical-offset="1365" max-vertical-offset="3210">
               <folding />
             </state>
           </provider>
@@ -35,7 +35,7 @@
       <file leaf-file-name="data_map_test.dart" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test/data_map_test.dart">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="248" column="43" selection-start="7381" selection-end="7381" vertical-scroll-proportion="0.0" vertical-offset="3720" max-vertical-offset="10560">
+            <state line="248" column="43" selection-start="7289" selection-end="7289" vertical-scroll-proportion="0.0" vertical-offset="3720" max-vertical-offset="10560">
               <folding />
             </state>
           </provider>
@@ -56,15 +56,16 @@
       <list>
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/packages/clean_data/src/data_map.dart" />
-        <option value="$PROJECT_DIR$/lib/src/data_map.dart" />
         <option value="$PROJECT_DIR$/test/data_map_test.dart" />
+        <option value="$PROJECT_DIR$/lib/src/data_map.dart" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="y" value="22" />
-    <option name="width" value="1280" />
-    <option name="height" value="748" />
+    <option name="x" value="-349" />
+    <option name="y" value="-1080" />
+    <option name="width" value="1920" />
+    <option name="height" value="1080" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
     <OptionsSetting value="true" id="Add" />
@@ -92,7 +93,6 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -127,6 +127,7 @@
           </PATH>
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -218,14 +219,14 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="22" width="1280" height="748" extended-state="0" />
+    <frame x="-349" y="-1080" width="1920" height="1080" extended-state="0" />
     <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2494043" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.16535018" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
@@ -321,29 +322,35 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/src/data_reference.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="21" column="4" selection-start="589" selection-end="589" vertical-scroll-proportion="0.73085845" vertical-offset="0" max-vertical-offset="1380" />
+        <state line="21" column="4" selection-start="589" selection-end="589" vertical-scroll-proportion="0.73085845" vertical-offset="0" max-vertical-offset="1380">
+          <folding />
+        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/packages/clean_data/src/data_map.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="97" column="22" selection-start="2420" selection-end="2420" vertical-scroll-proportion="0.75524473" vertical-offset="1131" max-vertical-offset="3210" />
+        <state line="97" column="22" selection-start="2420" selection-end="2420" vertical-scroll-proportion="0.75524473" vertical-offset="1131" max-vertical-offset="3210">
+          <folding />
+        </state>
       </provider>
     </entry>
     <entry file="file:///Applications/dart/dart-sdk/lib/core/map.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="182" column="18" selection-start="6180" selection-end="6180" vertical-scroll-proportion="0.33333334" vertical-offset="2587" max-vertical-offset="3195" />
+        <state line="182" column="18" selection-start="6180" selection-end="6180" vertical-scroll-proportion="0.33333334" vertical-offset="2587" max-vertical-offset="3195">
+          <folding />
+        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/test/data_map_test.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="248" column="43" selection-start="7381" selection-end="7381" vertical-scroll-proportion="0.0" vertical-offset="9634" max-vertical-offset="10560">
+        <state line="248" column="43" selection-start="7289" selection-end="7289" vertical-scroll-proportion="0.0" vertical-offset="3720" max-vertical-offset="10560">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/src/data_map.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="98" column="6" selection-start="2445" selection-end="2445" vertical-scroll-proportion="0.0" vertical-offset="1365" max-vertical-offset="3210">
+        <state line="98" column="6" selection-start="2429" selection-end="2429" vertical-scroll-proportion="0.106275305" vertical-offset="1365" max-vertical-offset="3210">
           <folding />
         </state>
       </provider>
